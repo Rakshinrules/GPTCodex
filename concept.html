@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ПРОМТМЕЙСТЕР — Concept</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#050507;
+      --bg-soft:#0b0e14;
+      --card:rgba(255,255,255,0.03);
+      --card-2:rgba(255,255,255,0.02);
+      --border:rgba(255,255,255,0.07);
+      --border-strong:rgba(143,163,191,0.24);
+      --text:#e7edf5;
+      --muted:#8d96a3;
+      --soft:#667287;
+      --steel:#9fb1c8;
+      --accent:#4f6485;
+      --accent-soft:rgba(79,100,133,0.22);
+      --shadow:0 10px 28px rgba(0,0,0,0.28);
+      --radius:20px;
+      --radius-sm:14px;
+      --maxw:420px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top, rgba(92,111,143,0.12), transparent 38%),
+        linear-gradient(180deg, #050507 0%, #07090d 100%);
+      color:var(--text);
+      font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      font-size:16px;
+      line-height:1.65;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+
+    .shell{
+      width:100%;
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:0 16px 56px;
+    }
+
+    .hero{
+      padding:72px 0 42px;
+      text-align:center;
+      position:relative;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:30px;
+      padding:0 12px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:rgba(255,255,255,0.02);
+      color:var(--soft);
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+      margin-bottom:18px;
+    }
+
+    h1{
+      font-family:'Sora',sans-serif;
+      font-size:clamp(34px, 9vw, 48px);
+      line-height:1.02;
+      letter-spacing:0.08em;
+      font-weight:800;
+      color:var(--text);
+      word-break:break-word;
+    }
+
+    .hero-rule{
+      width:64px;
+      height:1px;
+      margin:18px auto 18px;
+      background:linear-gradient(90deg, transparent, var(--steel), transparent);
+    }
+
+    .hero-sub{
+      font-size:17px;
+      color:var(--muted);
+      max-width:34ch;
+      margin:0 auto;
+    }
+
+    .hero-meta{
+      margin-top:14px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      color:var(--accent);
+    }
+
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:10;
+      margin:0 -16px 28px;
+      padding:10px 16px;
+      background:rgba(5,5,7,0.78);
+      backdrop-filter:blur(14px);
+      border-top:1px solid rgba(255,255,255,0.03);
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .nav::-webkit-scrollbar{display:none}
+    .nav-track{
+      display:flex;
+      gap:8px;
+      min-width:max-content;
+    }
+    .nav a{
+      text-decoration:none;
+      color:var(--soft);
+      font-size:11px;
+      font-family:'JetBrains Mono',monospace;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+      background:rgba(255,255,255,0.015);
+      white-space:nowrap;
+    }
+
+    section{margin-bottom:22px}
+
+    .label{
+      color:var(--soft);
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      margin-bottom:10px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, var(--card), var(--card-2));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+
+    h2{
+      font-family:'Sora',sans-serif;
+      font-size:22px;
+      line-height:1.18;
+      font-weight:700;
+      margin-bottom:14px;
+      letter-spacing:-0.02em;
+    }
+
+    h3{
+      font-family:'Sora',sans-serif;
+      font-size:15px;
+      line-height:1.3;
+      font-weight:700;
+      margin-bottom:6px;
+      color:var(--steel);
+    }
+
+    p + p{margin-top:12px}
+    p{color:var(--muted)}
+    strong{color:var(--text);font-weight:600}
+
+    .quote{
+      margin-top:14px;
+      padding:14px 14px 14px 16px;
+      border-left:2px solid var(--steel);
+      background:rgba(255,255,255,0.02);
+      border-radius:12px;
+      color:var(--text);
+    }
+
+    .stack{display:grid;gap:12px}
+
+    .model{
+      padding:14px;
+      border:1px solid rgba(255,255,255,0.05);
+      border-radius:16px;
+      background:rgba(255,255,255,0.018);
+    }
+    .model p{margin-top:4px;font-size:14px}
+
+    .steps{display:grid;gap:10px;margin-top:8px}
+    .step{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:12px 0;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    .step:last-child{border-bottom:none;padding-bottom:0}
+    .step:first-child{padding-top:0}
+    .step-num{
+      flex:0 0 26px;
+      width:26px;
+      height:26px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--accent-soft);
+      border:1px solid rgba(159,177,200,0.18);
+      color:var(--steel);
+      font-family:'JetBrains Mono',monospace;
+      font-size:12px;
+    }
+
+    .pipeline{
+      display:grid;
+      gap:10px;
+      margin-top:8px;
+    }
+    .pipe-item{
+      position:relative;
+      padding:11px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.05);
+      background:rgba(255,255,255,0.018);
+      color:var(--text);
+      font-family:'JetBrains Mono',monospace;
+      font-size:12px;
+      letter-spacing:0.03em;
+    }
+    .pipe-item:not(:last-child)::after{
+      content:'↓';
+      display:block;
+      text-align:center;
+      color:var(--soft);
+      margin-top:10px;
+      font-size:14px;
+    }
+
+    .list{display:grid;gap:8px;margin-top:8px}
+    .list-item{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:var(--muted);
+    }
+    .dot{
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--steel);
+      margin-top:10px;
+      flex:0 0 6px;
+    }
+
+    .footer{
+      padding:16px 0 8px;
+      text-align:center;
+      color:var(--soft);
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="hero" id="top">
+      <div class="badge">Concept / Mobile First</div>
+      <h1>ПРОМТМЕЙСТЕР</h1>
+      <div class="hero-rule"></div>
+      <p class="hero-sub">Настройка ИИ как профессионального помощника. Создаёт режим работы, а не просто ответы.</p>
+      <div class="hero-meta">Create Vibe Mode</div>
+    </header>
+
+    <nav class="nav" aria-label="Навигация по концепту">
+      <div class="nav-track">
+        <a href="#definition">Суть</a>
+        <a href="#mode">Режим</a>
+        <a href="#config">Конфигурация</a>
+        <a href="#models">Модели</a>
+        <a href="#mvp">MVP</a>
+        <a href="#base">База</a>
+        <a href="#flow">Пайплайн</a>
+        <a href="#audience">Для кого</a>
+        <a href="#future">Дальше</a>
+      </div>
+    </nav>
+
+    <section id="definition">
+      <div class="label">01 / Определение</div>
+      <div class="card">
+        <h2>Что такое ПРОМТМЕЙСТЕР</h2>
+        <p><strong>ПРОМТМЕЙСТЕР</strong> — это не просто конструктор промтов и не набор шаблонов. Это инструмент, который помогает собрать для ИИ правильную рабочую конфигурацию: роль, поведение, ограничения, стиль мышления, формат ответа и прикладной контекст.</p>
+        <p>Во внутреннем языке это можно назвать просто: <strong>он создаёт вайб-кодинг там, где его нет</strong>. Во внешнем языке — формирует режим глубокого согласованного взаимодействия с ИИ.</p>
+        <div class="quote">Главная цель продукта — не учить человека промт-инжинирингу вручную, а быстро приводить его к более сильной и устойчивой настройке ИИ под задачу.</div>
+      </div>
+    </section>
+
+    <section id="mode">
+      <div class="label">02 / Режим</div>
+      <div class="card">
+        <h2>Что значит “создать режим”</h2>
+        <p>Обычный ИИ без рамки часто отвечает слишком общо: меняет стиль, теряет контекст, болтает, улучшает то, что не просили, и не держит линию проекта.</p>
+        <p><strong>ПРОМТМЕЙСТЕР создаёт режим</strong>, в котором ИИ работает не как случайный чат, а как настроенный помощник: держит роль, сохраняет строгость, учитывает контекст и действует внутри заданной логики.</p>
+        <div class="quote">Вайб-кодинг здесь — не мем и не магия. Это результат правильно собранной конфигурации.</div>
+      </div>
+    </section>
+
+    <section id="config">
+      <div class="label">03 / Конфигурация</div>
+      <div class="card">
+        <h2>Конфигурация ИИ как объект</h2>
+        <p>Центральная сущность продукта — не “готовый промт”, а <strong>конфигурация ИИ</strong>. Её можно собрать, сохранить и использовать повторно.</p>
+        <div class="list">
+          <div class="list-item"><span class="dot"></span><span><strong>Роль</strong> — кем должен быть ИИ.</span></div>
+          <div class="list-item"><span class="dot"></span><span><strong>Когнитивная модель</strong> — как он должен думать.</span></div>
+          <div class="list-item"><span class="dot"></span><span><strong>Уровень строгости</strong> — насколько он критичен и собран.</span></div>
+          <div class="list-item"><span class="dot"></span><span><strong>Контекст проекта</strong> — что он должен удерживать в голове.</span></div>
+          <div class="list-item"><span class="dot"></span><span><strong>Ограничения и формат</strong> — что делать нельзя и как именно отвечать.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="models">
+      <div class="label">04 / Поведенческие модели</div>
+      <div class="card">
+        <h2>Модели мышления — это ядро</h2>
+        <p>ИИ можно настраивать не только по роли, но и по когнитивной позиции. Это и делает поведение заметно более точным.</p>
+        <div class="stack" style="margin-top:14px;">
+          <div class="model">
+            <h3>Архитектор систем</h3>
+            <p>Держит структуру целиком, мыслит слоями, не теряет общую картину.</p>
+          </div>
+          <div class="model">
+            <h3>Прагматичный инженер</h3>
+            <p>Отдаёт рабочие решения без воды и без лишней теории.</p>
+          </div>
+          <div class="model">
+            <h3>Жёсткий ревьюер</h3>
+            <p>Не льстит, указывает слабые места, ищет реальные ошибки и риски.</p>
+          </div>
+          <div class="model">
+            <h3>Стратег</h3>
+            <p>Смотрит на несколько шагов вперёд, учитывает последствия и развитие системы.</p>
+          </div>
+          <div class="model">
+            <h3>Минималист</h3>
+            <p>Срезает лишнее, оставляет только суть и понятные решения.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="mvp">
+      <div class="label">05 / MVP</div>
+      <div class="card">
+        <h2>Минимальный режим — 3 шага</h2>
+        <p>MVP не должен пугать длинной анкетой. Базовой конфигурации достаточно уже из трёх шагов.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <h3>Кто ты</h3>
+              <p>Выбор роли и домена: например, архитектор, инженер, стратег, продуктовый помощник.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <h3>Как ты думаешь</h3>
+              <p>Выбор модели мышления: строгость, критичность, глубина, склонность к архитектуре или к исполнению.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <h3>Что мы делаем</h3>
+              <p>Фиксация задачи, формата результата и основных ограничений.</p>
+            </div>
+          </div>
+        </div>
+        <div class="quote">Этого уже достаточно, чтобы вместо обычного чата получить более устойчивый рабочий режим.</div>
+      </div>
+    </section>
+
+    <section id="base">
+      <div class="label">06 / Внутренняя база</div>
+      <div class="card">
+        <h2>Система может накапливать собственную базу</h2>
+        <p>ПРОМТМЕЙСТЕР — это не одноразовая форма. Со временем он может опираться на внутреннюю библиотеку конфигураций и профилей.</p>
+        <div class="list">
+          <div class="list-item"><span class="dot"></span><span>Библиотека ролей</span></div>
+          <div class="list-item"><span class="dot"></span><span>Библиотека моделей поведения</span></div>
+          <div class="list-item"><span class="dot"></span><span>Доменные профили под типы задач</span></div>
+          <div class="list-item"><span class="dot"></span><span>Удачные конфигурации и пресеты</span></div>
+          <div class="list-item"><span class="dot"></span><span>Пользовательские режимы для повторного запуска</span></div>
+        </div>
+        <p style="margin-top:12px;">Это превращает продукт из формы вопросов в <strong>систему режимов работы с ИИ</strong>.</p>
+      </div>
+    </section>
+
+    <section id="flow">
+      <div class="label">07 / Архитектура</div>
+      <div class="card">
+        <h2>Как работает взаимодействие</h2>
+        <p>Под капотом это не магия и не “самостоятельный интеллект”, а управляемая логика сборки режима.</p>
+        <div class="pipeline">
+          <div class="pipe-item">Ввод пользователя</div>
+          <div class="pipe-item">Уточнение контекста</div>
+          <div class="pipe-item">Выбор роли и модели мышления</div>
+          <div class="pipe-item">Сборка конфигурации</div>
+          <div class="pipe-item">Генерация инструкции для ИИ</div>
+          <div class="pipe-item">Сохранение режима</div>
+        </div>
+        <p style="margin-top:12px;">Система может анализировать ответы, удерживать контекст между шагами и предлагать более уместные настройки на следующем этапе.</p>
+      </div>
+    </section>
+
+    <section id="audience">
+      <div class="label">08 / Для кого</div>
+      <div class="card">
+        <h2>Кому это реально нужно</h2>
+        <div class="list">
+          <div class="list-item"><span class="dot"></span><span><strong>Вайб-кодерам</strong> — тем, кто хочет быстро запускать рабочий режим разработки с ИИ.</span></div>
+          <div class="list-item"><span class="dot"></span><span><strong>Создателям цифровых продуктов</strong> — когда важны структура, стратегия и ясная логика.</span></div>
+          <div class="list-item"><span class="dot"></span><span><strong>Разработчикам</strong> — когда нужен не болтливый чат, а собранный технический помощник.</span></div>
+          <div class="list-item"><span class="dot"></span><span><strong>Тем, кто регулярно работает с ИИ</strong> и хочет управлять поведением, а не каждый раз начинать с нуля.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="future">
+      <div class="label">09 / Вектор развития</div>
+      <div class="card">
+        <h2>Куда это может вырасти</h2>
+        <p>На первом этапе ПРОМТМЕЙСТЕР собирает конфигурацию. Дальше он может стать постоянным инструментом управления ИИ под проекты и режимы.</p>
+        <div class="list">
+          <div class="list-item"><span class="dot"></span><span>Постоянный ассистент с переключаемыми профилями</span></div>
+          <div class="list-item"><span class="dot"></span><span>Режимы под разные типы проектов</span></div>
+          <div class="list-item"><span class="dot"></span><span>Личная библиотека сильных конфигураций</span></div>
+          <div class="list-item"><span class="dot"></span><span>Коллекция моделей мышления под разные сценарии</span></div>
+          <div class="list-item"><span class="dot"></span><span>Маркетплейс или обмен пресетами в будущем</span></div>
+        </div>
+        <div class="quote">То есть продукт развивается не от “ещё одного промта”, а от идеи: <strong>собрать правильный режим взаимодействия с ИИ под конкретную работу</strong>.</div>
+      </div>
+    </section>
+
+    <div class="footer">ПРОМТМЕЙСТЕР / Concept / 2026</div>
+  </div>
+</body>
+</html>

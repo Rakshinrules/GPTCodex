@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ПРОМТМЕЙСТЕР — План создания</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#050507;
+      --bg-soft:#0b0d12;
+      --card:#10131a;
+      --card-2:#0d1016;
+      --text:#e7edf5;
+      --muted:#8d97a6;
+      --line:rgba(255,255,255,0.08);
+      --line-strong:rgba(255,255,255,0.14);
+      --steel:#90a4bf;
+      --cold:#5d7291;
+      --deep:#273246;
+      --accent:#c5d2e3;
+      --ok:#8fb3a1;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+
+    html{scroll-behavior:smooth}
+
+    body{
+      background:linear-gradient(180deg,var(--bg) 0%, #07090d 100%);
+      color:var(--text);
+      font-family:'Inter',sans-serif;
+      font-size:16px;
+      line-height:1.65;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+
+    .container{
+      width:100%;
+      max-width:420px;
+      margin:0 auto;
+      padding:0 16px;
+    }
+
+    .hero{
+      padding:72px 0 36px;
+      border-bottom:1px solid var(--line);
+      background:
+        radial-gradient(circle at top center, rgba(144,164,191,0.08), transparent 44%),
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:28px;
+      padding:0 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:var(--steel);
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+    }
+
+    .title{
+      margin-top:18px;
+      font-family:'Sora',sans-serif;
+      font-weight:800;
+      font-size:clamp(32px, 9vw, 52px);
+      line-height:1.04;
+      letter-spacing:0.08em;
+      color:var(--text);
+      word-break:break-word;
+    }
+
+    .hero-line{
+      width:64px;
+      height:1px;
+      margin:18px 0 18px;
+      background:linear-gradient(90deg, transparent, var(--steel), transparent);
+    }
+
+    .hero-desc{
+      color:var(--muted);
+      font-size:16px;
+      max-width:34ch;
+    }
+
+    .hero-meta{
+      margin-top:16px;
+      color:var(--cold);
+      font-family:'JetBrains Mono',monospace;
+      font-size:12px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+    }
+
+    .section{
+      padding:26px 0 0;
+    }
+
+    .section-title{
+      margin-bottom:12px;
+      color:var(--steel);
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+    }
+
+    .card{
+      padding:20px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.02));
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.22);
+    }
+
+    .card + .card{margin-top:12px}
+
+    .h2{
+      font-family:'Sora',sans-serif;
+      font-size:24px;
+      line-height:1.15;
+      margin-bottom:12px;
+      color:var(--text);
+    }
+
+    .lead{color:var(--muted)}
+
+    .stack > * + *{margin-top:12px}
+
+    .list{display:grid;gap:10px;margin-top:14px}
+
+    .item{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      color:var(--text);
+    }
+
+    .item::before{
+      content:"";
+      width:7px;
+      height:7px;
+      margin-top:8px;
+      border-radius:50%;
+      flex:0 0 7px;
+      background:var(--steel);
+      opacity:0.9;
+    }
+
+    .muted{color:var(--muted)}
+
+    .grid-note{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .code{
+      margin-top:12px;
+      padding:14px;
+      border-radius:14px;
+      background:#0b0e14;
+      border:1px solid var(--line);
+      font-family:'JetBrains Mono',monospace;
+      font-size:12px;
+      line-height:1.7;
+      color:#d7e1ec;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .phase{
+      position:relative;
+      padding-left:18px;
+    }
+
+    .phase::before{
+      content:"";
+      position:absolute;
+      left:3px;
+      top:7px;
+      bottom:-18px;
+      width:1px;
+      background:linear-gradient(180deg, var(--line-strong), transparent);
+    }
+
+    .phase:last-child::before{display:none}
+
+    .phase-head{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+
+    .phase-dot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--steel);
+      box-shadow:0 0 0 4px rgba(144,164,191,0.08);
+    }
+
+    .phase-name{
+      font-family:'JetBrains Mono',monospace;
+      font-size:12px;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--steel);
+    }
+
+    .subcard{
+      margin-top:12px;
+      padding:16px;
+      background:rgba(255,255,255,0.018);
+      border:1px solid var(--line);
+      border-radius:16px;
+    }
+
+    .subcard h3{
+      font-size:16px;
+      line-height:1.35;
+      margin-bottom:8px;
+      color:var(--text);
+    }
+
+    .tagrow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.02);
+      color:var(--accent);
+      font-size:12px;
+    }
+
+    .footer{
+      padding:36px 0 50px;
+      color:var(--muted);
+      text-align:center;
+      font-size:13px;
+    }
+
+    @media (min-width: 768px){
+      .container{max-width:760px;padding:0 24px}
+      .hero{padding:92px 0 44px}
+      .section-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+      .triple{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <div class="badge">BUILD PLAN</div>
+      <h1 class="title">ПРОМТМЕЙСТЕР</h1>
+      <div class="hero-line"></div>
+      <p class="hero-desc">
+        Подробный пошаговый план создания продукта: product core, UX, UI, frontend, backend, prompt engine, ИИ, шаблоны и база конфигураций.
+      </p>
+      <div class="hero-meta">MOBILE-FIRST · INTERNAL ROADMAP</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="section-title">01 · Основа</div>
+        <div class="card stack">
+          <div class="h2">Что мы строим</div>
+          <p class="lead">
+            ПРОМТМЕЙСТЕР — это система настройки ИИ как профессионального помощника через роль, модель мышления, задачу, ограничения, формат, конфигурации и библиотеку шаблонов.
+          </p>
+          <div class="grid-note">
+            Это не просто генератор текста. Центральный объект продукта — <strong>AI Configuration</strong>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">02 · Product Core</div>
+        <div class="card">
+          <div class="phase">
+            <div class="phase-head"><span class="phase-dot"></span><div class="phase-name">Шаг 1</div></div>
+            <div class="subcard">
+              <h3>Зафиксировать объект генерации</h3>
+              <div class="list">
+                <div class="item">Определить, что создаёт система на выходе: system prompt, user prompt, комбинированную инструкцию или JSON-конфиг.</div>
+                <div class="item">Принять рабочее решение: два слоя выхода — человекочитаемый prompt + внутренний JSON-конфиг.</div>
+                <div class="item">Зафиксировать, зачем нужен JSON: сохранение, переиспользование, редактирование, библиотека, история.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="phase">
+            <div class="phase-head"><span class="phase-dot"></span><div class="phase-name">Шаг 2</div></div>
+            <div class="subcard">
+              <h3>Определить главную сущность — AI Configuration</h3>
+              <div class="code">{
+  "id": "string",
+  "title": "string",
+  "domain": "string",
+  "role": "string",
+  "behavior_model": "string",
+  "task": "string",
+  "context": "string",
+  "constraints": ["..."],
+  "output_format": "string",
+  "tone": "string",
+  "depth": "string",
+  "extra_rules": ["..."],
+  "final_prompt": "string",
+  "created_at": "date",
+  "updated_at": "date"
+}</div>
+            </div>
+          </div>
+
+          <div class="phase">
+            <div class="phase-head"><span class="phase-dot"></span><div class="phase-name">Шаг 3</div></div>
+            <div class="subcard">
+              <h3>Разделить продукт на 4 слоя</h3>
+              <div class="tagrow">
+                <div class="tag">Конфигуратор</div>
+                <div class="tag">Шаблоны</div>
+                <div class="tag">Модели поведения</div>
+                <div class="tag">База конфигураций</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">03 · UX Architecture</div>
+        <div class="section-grid">
+          <div class="card stack">
+            <div class="h2">Основной пользовательский сценарий</div>
+            <div class="list">
+              <div class="item">Выбор направления</div>
+              <div class="item">Выбор роли</div>
+              <div class="item">Выбор модели поведения</div>
+              <div class="item">Формулировка задачи</div>
+              <div class="item">Добавление ограничений</div>
+              <div class="item">Выбор формата ответа</div>
+              <div class="item">Генерация результата</div>
+              <div class="item">Сохранение конфигурации</div>
+            </div>
+          </div>
+
+          <div class="card stack">
+            <div class="h2">MVP-flow</div>
+            <div class="list">
+              <div class="item">Кто ИИ?</div>
+              <div class="item">Как он думает?</div>
+              <div class="item">Что он делает?</div>
+            </div>
+            <div class="grid-note">Дополнительно скрытый advanced-блок: формат, ограничения, дополнительные правила.</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">UX-принципы</div>
+          <div class="list">
+            <div class="item">Один экран = один смысловой блок.</div>
+            <div class="item">Минимум текста, максимум выбора.</div>
+            <div class="item">Сначала кнопки и варианты, потом ручной ввод.</div>
+            <div class="item">Advanced-параметры скрыты, пока пользователь сам их не откроет.</div>
+            <div class="item">Черновик сохраняется автоматически.</div>
+            <div class="item">Всё проектируется mobile-first.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">04 · UI Plan</div>
+        <div class="card stack">
+          <div class="h2">Экранная карта</div>
+          <div class="list">
+            <div class="item">Splash / entry</div>
+            <div class="item">Home</div>
+            <div class="item">New configuration</div>
+            <div class="item">Step screen</div>
+            <div class="item">Behavior models</div>
+            <div class="item">Templates</div>
+            <div class="item">Result screen</div>
+            <div class="item">Saved configurations</div>
+            <div class="item">Template detail</div>
+            <div class="item">Settings</div>
+          </div>
+        </div>
+
+        <div class="section-grid" style="margin-top:12px;">
+          <div class="card stack">
+            <div class="h2">Очередность UI</div>
+            <div class="list">
+              <div class="item">Home</div>
+              <div class="item">Step screen</div>
+              <div class="item">Result screen</div>
+              <div class="item">Saved configs</div>
+              <div class="item">Templates</div>
+              <div class="item">Settings</div>
+            </div>
+          </div>
+
+          <div class="card stack">
+            <div class="h2">UI-система</div>
+            <div class="list">
+              <div class="item">Типографика</div>
+              <div class="item">Кнопки</div>
+              <div class="item">Карточки</div>
+              <div class="item">Step indicator</div>
+              <div class="item">Chips</div>
+              <div class="item">Form blocks</div>
+              <div class="item">Bottom actions</div>
+              <div class="item">Modal sheets</div>
+              <div class="item">Mobile navigation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">05 · Frontend</div>
+        <div class="card stack">
+          <div class="h2">Первая версия фронта</div>
+          <div class="list">
+            <div class="item">Mobile-first web app</div>
+            <div class="item">Локальный state</div>
+            <div class="item">Mock data</div>
+            <div class="item">Без реального AI API на первом визуальном этапе</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Порядок задач фронта</div>
+          <div class="list">
+            <div class="item">Поднять проект</div>
+            <div class="item">Собрать дизайн-систему</div>
+            <div class="item">Сделать layout</div>
+            <div class="item">Сделать home</div>
+            <div class="item">Сделать flow шагов</div>
+            <div class="item">Сделать состояние формы</div>
+            <div class="item">Сделать экран результата</div>
+            <div class="item">Сделать сохранение в local storage</div>
+            <div class="item">Сделать библиотеку шаблонов</div>
+            <div class="item">Сделать библиотеку моделей поведения</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Frontend-модули</div>
+          <div class="tagrow">
+            <div class="tag">ui</div>
+            <div class="tag">config-builder</div>
+            <div class="tag">templates</div>
+            <div class="tag">behavior-models</div>
+            <div class="tag">result</div>
+            <div class="tag">storage</div>
+            <div class="tag">settings</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">06 · Backend</div>
+        <div class="section-grid">
+          <div class="card stack">
+            <div class="h2">Когда подключать</div>
+            <div class="list">
+              <div class="item">Когда появляется генерация через ИИ</div>
+              <div class="item">Когда нужно хранение</div>
+              <div class="item">Когда нужны шаблоны из базы</div>
+              <div class="item">Когда нужна синхронизация</div>
+            </div>
+          </div>
+
+          <div class="card stack">
+            <div class="h2">Что должен делать backend</div>
+            <div class="list">
+              <div class="item">Принимать конфиг</div>
+              <div class="item">Собирать prompt</div>
+              <div class="item">Обращаться к ИИ</div>
+              <div class="item">Возвращать результат</div>
+              <div class="item">Хранить конфигурации, шаблоны, модели</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Backend-модули</div>
+          <div class="tagrow">
+            <div class="tag">Auth</div>
+            <div class="tag">Configurations</div>
+            <div class="tag">Templates</div>
+            <div class="tag">Behavior Models</div>
+            <div class="tag">Prompt Assembly</div>
+            <div class="tag">AI Gateway</div>
+            <div class="tag">Storage</div>
+            <div class="tag">Admin Content</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Минимальные API endpoints</div>
+          <div class="code">POST /configurations/generate
+GET  /configurations
+POST /configurations
+GET  /templates
+GET  /behavior-models
+POST /assemble-prompt</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">07 · Prompt Engine</div>
+        <div class="card stack">
+          <div class="h2">Отдельный слой продукта</div>
+          <p class="lead">Prompt Engine не надо смешивать с UI. Это отдельный модуль, который принимает structured config и выдаёт финальный prompt.</p>
+          <div class="list">
+            <div class="item">Template composer</div>
+            <div class="item">Behavior injector</div>
+            <div class="item">Rule injector</div>
+            <div class="item">Formatting engine</div>
+            <div class="item">Validation layer</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Что он делает</div>
+          <div class="list">
+            <div class="item">Принимает structured config</div>
+            <div class="item">Собирает итоговую инструкцию</div>
+            <div class="item">Добавляет нужные правила</div>
+            <div class="item">Добавляет поведенческую модель</div>
+            <div class="item">Добавляет доменный шаблон</div>
+            <div class="item">Выдаёт финальный prompt</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">08 · AI Integration</div>
+        <div class="triple">
+          <div class="card stack">
+            <div class="h2">ИИ №1</div>
+            <p><strong>Builder</strong></p>
+            <p class="muted">Собирает итоговый prompt из конфигурации.</p>
+          </div>
+          <div class="card stack">
+            <div class="h2">ИИ №2</div>
+            <p><strong>Suggestion Engine</strong></p>
+            <p class="muted">Предлагает роли, модели, форматы, ограничения.</p>
+          </div>
+          <div class="card stack">
+            <div class="h2">ИИ №3</div>
+            <p><strong>Refiner</strong></p>
+            <p class="muted">Улучшает уже собранную конфигурацию.</p>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Порядок подключения ИИ</div>
+          <div class="list">
+            <div class="item">Сначала собрать систему без ИИ — на правилах и шаблонах.</div>
+            <div class="item">Потом подключить ИИ для подсказок.</div>
+            <div class="item">Потом подключить ИИ для refinement.</div>
+            <div class="item">Потом сделать гибридный режим.</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Как именно “обучаем”</div>
+          <div class="list">
+            <div class="item">Не fine-tuning, а управление через system prompts.</div>
+            <div class="item">Создаём библиотеку правил.</div>
+            <div class="item">Создаём библиотеку поведенческих моделей.</div>
+            <div class="item">Создаём библиотеку доменных шаблонов.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">09 · Поведенческие модели</div>
+        <div class="card stack">
+          <div class="h2">Базовый список моделей</div>
+          <div class="tagrow">
+            <div class="tag">Архитектор</div>
+            <div class="tag">Инженер</div>
+            <div class="tag">Жёсткий ревьюер</div>
+            <div class="tag">Минималист</div>
+            <div class="tag">Наставник</div>
+            <div class="tag">Стратег</div>
+            <div class="tag">Аналитик</div>
+            <div class="tag">Исполнитель</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Для каждой модели нужно создать</div>
+          <div class="list">
+            <div class="item">Имя</div>
+            <div class="item">Короткое описание</div>
+            <div class="item">Как мыслит</div>
+            <div class="item">Как отвечает</div>
+            <div class="item">Что избегает</div>
+            <div class="item">Какие правила добавляет в prompt</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Формат хранения</div>
+          <p class="lead">Каждая модель хранится как JSON-объект и может быть подключена к Prompt Engine как модуль поведения.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">10 · Готовые шаблоны</div>
+        <div class="section-grid">
+          <div class="card stack">
+            <div class="h2">Типы шаблонов</div>
+            <div class="list">
+              <div class="item">Доменный шаблон: frontend, backend, UX, бизнес, маркетинг</div>
+              <div class="item">Задачный шаблон: сделать feature, разобрать ошибку, спроектировать архитектуру, написать ТЗ</div>
+              <div class="item">Поведенческий шаблон: инженер, наставник, ревьюер, стратег</div>
+            </div>
+          </div>
+
+          <div class="card stack">
+            <div class="h2">Как они собираются вместе</div>
+            <div class="code">домен + задача + поведение + ограничения + формат
+= финальный prompt</div>
+          </div>
+        </div>
+
+        <div class="card stack" style="margin-top:12px;">
+          <div class="h2">Что сделать по шаблонам</div>
+          <div class="list">
+            <div class="item">Определить категории</div>
+            <div class="item">Определить формат шаблона</div>
+            <div class="item">Создать первые 10–20 шаблонов</div>
+            <div class="item">Сделать экран библиотеки</div>
+            <div class="item">Дать пользователю выбор, редактирование и сохранение как своего шаблона</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">11 · Storage</div>
+        <div class="card stack">
+          <div class="h2">Что храним</div>
+          <div class="list">
+            <div class="item">User configs</div>
+            <div class="item">Recent configs</div>
+            <div class="item">Favorite templates</div>
+            <div class="item">Behavior presets</div>
+            <div class="item">Custom rules</div>
+            <div class="item">Generated prompts</div>
+          </div>
+        </div>
+
+        <div class="section-grid" style="margin-top:12px;">
+          <div class="card stack">
+            <div class="h2">Сначала</div>
+            <p class="lead">Local storage / local db для MVP.</p>
+          </div>
+          <div class="card stack">
+            <div class="h2">Потом</div>
+            <p class="lead">Серверное хранение и синхронизация между устройствами.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">12 · Admin Content</div>
+        <div class="card stack">
+          <div class="h2">Внутренний контент-слой</div>
+          <div class="list">
+            <div class="item">Добавлять шаблоны</div>
+            <div class="item">Редактировать модели поведения</div>
+            <div class="item">Обновлять правила</div>
+            <div class="item">Менять тексты</div>
+            <div class="item">Включать и выключать блоки</div>
+          </div>
+          <div class="grid-note">Даже если сначала это будет просто набор JSON-файлов — слой надо предусмотреть сразу.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title">13 · Порядок сборки</div>
+        <div class="card stack">
+          <div class="h2">Реальный порядок работ</div>
+          <div class="list">
+            <div class="item">Зафиксировать сущности: config, template, behavior model</div>
+            <div class="item">Прописать JSON-структуры</div>
+            <div class="item">Спроектировать UX-flow</div>
+            <div class="item">Сделать wireframe экранов</div>
+            <div class="item">Собрать frontend без ИИ</div>
+            <div class="item">Сделать локальную генерацию prompt по шаблонам</div>
+            <div class="item">Подключить backend</div>
+            <div class="item">Подключить ИИ для подсказок</div>
+            <div class="item">Подключить ИИ для refinement</div>
+            <div class="item">Добавить библиотеку шаблонов и моделей</div>
+            <div class="item">Добавить сохранения и историю</div>
+            <div class="item">Довести UI до нормального состояния</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    ПРОМТМЕЙСТЕР · PLAN · INTERNAL BUILD DOCUMENT
+  </footer>
+</body>
+</html>
