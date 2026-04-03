@@ -1,0 +1,5147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ПРОМТМЕЙСТЕР — прототип</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#07080c; --card:rgba(255,255,255,0.05); --card-2:rgba(255,255,255,0.03);
+      --line:rgba(255,255,255,0.08); --text:#edf2fb; --muted:#9aa4b5; --soft:#6f7a90;
+      --accent:#7d8fff; --accent2:#71d7ff; --accent3:#83c5aa; --shadow:0 16px 40px rgba(0,0,0,0.34);
+      --radius:22px; --maxw:430px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      background:
+        radial-gradient(circle at 20% 0%, rgba(125,143,255,0.14), transparent 35%),
+        radial-gradient(circle at 80% 10%, rgba(113,215,255,0.10), transparent 28%),
+        linear-gradient(180deg, #07080c 0%, #090b10 100%);
+      color:var(--text); font-family:'Inter',sans-serif; overflow:hidden;
+    }
+    .app{width:100%;max-width:var(--maxw);margin:0 auto;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+    .top{padding:16px 16px 10px;position:relative;z-index:2;backdrop-filter:blur(10px)}
+    .brand{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:10px}
+    .brand-title{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;letter-spacing:.08em}
+    .brand-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--soft);letter-spacing:.12em;text-transform:uppercase}
+    .header-right{display:flex;align-items:flex-start;gap:8px}
+    .mode-topbox{display:flex;align-items:flex-start;gap:8px;padding-top:2px}
+    .mode-label-wrap{text-align:right}
+    .mode-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--soft);letter-spacing:.12em;text-transform:uppercase;line-height:1.1}
+    .mode-help{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.2;max-width:108px}
+    .mode-select{min-height:40px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--text);padding:0 12px;font:inherit;outline:none}
+    .copy-icon{border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);min-width:40px;height:40px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px}
+    .copy-icon.hidden{visibility:hidden}
+    .step-tools{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:12px}
+    .back-btn{min-height:36px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--text);font-size:13px;cursor:pointer}
+    .back-btn.hidden{visibility:hidden}
+    .summary-strip,.selected-preview{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:14px}
+    .summary-title{font-size:12px;color:var(--soft);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px}
+    .summary-text{font-size:14px;color:var(--muted);line-height:1.5}
+    .selected-preview.hidden{display:none}
+    .selected-preview.show{display:block;animation:popIn .18s ease-out}
+    @keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+    .filter-box{margin-bottom:12px;position:relative}
+    .suggest-box{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:12;background:linear-gradient(180deg, rgba(18,21,30,0.98), rgba(10,12,18,0.98));border:1px solid rgba(255,255,255,0.08);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;display:none;max-height:280px;overflow-y:auto}
+    .suggest-box.show{display:block}
+    .suggest-item{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;border:none;border-bottom:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);cursor:pointer;text-align:left}
+    .suggest-item:last-child{border-bottom:none}
+    .suggest-item:hover,.suggest-item.active{background:rgba(125,143,255,0.10)}
+    .suggest-title{font-size:14px;font-weight:600;color:var(--text)}
+    .suggest-meta{font-size:11px;color:var(--soft);font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
+    .filter-input.with-clear{padding-right:44px}
+    .filter-clear-btn{position:absolute;right:12px;top:24px;transform:translateY(-50%);width:24px;height:24px;border:none;border-radius:999px;background:rgba(255,255,255,0.06);color:var(--muted);font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:13}
+    .filter-clear-btn:hover{background:rgba(255,255,255,0.10);color:var(--text)}
+    .filter-input,.field-input,textarea{width:100%;border:none;outline:none;background:rgba(255,255,255,0.03);color:var(--text);padding:14px 16px;border-radius:18px;font:inherit;line-height:1.5;border:1px solid rgba(255,255,255,0.06)}
+    .filter-input,.field-input{min-height:48px}
+    textarea{min-height:140px;resize:none}
+    .field-input::placeholder,.filter-input::placeholder,textarea::placeholder{color:#72809a}
+
+    .nav-actions{display:flex;align-items:center;gap:8px}
+    .lead{display:none!important}
+    #stepHint{display:none!important}
+    .brand .brand-meta{display:none!important}
+    .selected-preview .summary-title,.summary-strip .summary-title{display:none!important}
+    .selected-preview,.summary-strip{padding:10px 14px}
+    .summary-text,strong,.option.active,.chip.active,.mode.selected .mode-name,.field-input,.filter-input,textarea{color:#f6f9ff}
+    .field-input,.filter-input,textarea{font-weight:500}
+    .field-input::placeholder,.filter-input::placeholder,textarea::placeholder{color:#7f8aa1;font-weight:400}
+    .label{display:none!important}
+    .task-helper{display:none!important}
+    .selected-preview{background:rgba(125,143,255,0.10);border-color:rgba(125,143,255,0.20)}
+
+    #directionPreview,#subDirectionPreview{display:none!important}
+
+
+    .progress{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+    .bar{height:5px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden}
+    .bar.active::before{content:"";display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+    .bar.done::before{content:"";display:block;height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent2))}
+    .screens{flex:1;position:relative;overflow:hidden}
+    .screen{position:absolute;inset:0;padding:10px 16px 22px;overflow:auto;opacity:0;transform:translateX(20px);pointer-events:none;transition:.28s ease}
+    .screen.active{opacity:1;transform:translateX(0);pointer-events:auto}
+    .badge{display:inline-flex;align-items:center;min-height:28px;padding:0 12px;border:1px solid var(--line);background:rgba(255,255,255,0.025);border-radius:999px;font-size:11px;color:var(--soft);letter-spacing:.14em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:14px}
+    h1{font-family:'Sora',sans-serif;font-size:28px;line-height:1.15;letter-spacing:-.03em;margin-bottom:10px}
+    .lead{color:var(--muted);font-size:15px;margin-bottom:18px;max-width:34ch}
+    .card{background:linear-gradient(180deg,var(--card),var(--card-2));border:1px solid var(--line);box-shadow:var(--shadow);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+    .label{font-size:12px;color:var(--soft);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.14em;margin-bottom:12px}
+    .options,.chips{display:flex;gap:10px;flex-wrap:wrap}
+    .option,.chip,.saved-btn,.tiny{min-height:42px;padding:0 14px;border-radius:16px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.16s ease}
+    .option.active,.chip.active{background:linear-gradient(180deg, rgba(125,143,255,0.20), rgba(113,215,255,0.08));border-color:rgba(125,143,255,0.35)}
+    .option.hidden,.role-card.hidden{display:none!important}
+    .role-card{border-radius:20px;border:1px solid var(--line);background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));padding:14px;cursor:pointer;transition:.18s ease;margin-bottom:12px}
+    .role-card.selected{border-color:rgba(125,143,255,0.35);background:linear-gradient(180deg, rgba(125,143,255,0.14), rgba(113,215,255,0.05))}
+    .mode-line{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .mode-name{font-weight:700;font-size:16px}
+    .mode-short{color:var(--muted);font-size:13px;margin-top:6px}
+    .mode-right{display:flex;align-items:center;gap:8px}
+    .mode-tag{font-size:11px;color:var(--accent2);font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+    .info-btn{width:30px;height:30px;border-radius:999px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:14px;cursor:pointer;flex:0 0 30px}
+    .small-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .clarify-item,.mode-question-item{padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .clarify-item:last-child,.mode-question-item:last-child{border-bottom:none}
+    .question{font-weight:600;margin-bottom:10px}
+    .question-help{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.45}
+    .output{border-radius:22px;padding:18px;min-height:280px;background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));border:1px solid rgba(255,255,255,0.08);box-shadow:var(--shadow)}
+    .result-text{white-space:pre-wrap;line-height:1.65;font-size:15px}
+
+    .result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+    .inline-chip{
+      min-height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(125,143,255,0.30);
+      background:linear-gradient(180deg, rgba(125,143,255,0.16), rgba(113,215,255,0.06));
+      color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;
+      text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;justify-content:center
+    }
+    .ai-panel{margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)}
+    .ai-panel.hidden{display:none!important}
+    .ai-panel-title{font-size:12px;color:var(--soft);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px}
+    .ai-panel-text{
+      width:100%;min-height:240px;resize:vertical;border:none;outline:none;background:rgba(255,255,255,0.03);
+      color:var(--text);padding:14px;border-radius:16px;font:inherit;line-height:1.6;border:1px solid rgba(255,255,255,0.06)
+    }
+
+    .built-with{margin-top:12px;color:var(--soft);font-size:12px;font-family:'JetBrains Mono',monospace}
+    .warn{margin-top:12px;color:#ffcc9c;font-size:13px}
+    .saved-list{display:grid;gap:10px}
+    .saved-item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)}
+    .saved-title{font-weight:700;font-size:14px;line-height:1.35}
+    .saved-meta{font-size:12px;color:var(--soft);margin-top:4px}
+    .saved-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .saved-btn,.tiny{min-height:34px;padding:0 10px;border-radius:12px;font-size:12px}
+    .actions{padding:12px 16px 16px;display:grid;gap:10px;position:relative;z-index:3}
+    .btn{min-height:52px;border:none;border-radius:18px;font:inherit;font-weight:600;cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#061018;box-shadow:0 10px 28px rgba(97,130,255,0.25)}
+    .btn.secondary{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:var(--text)}
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .hidden{display:none!important}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(4,6,10,0.66);backdrop-filter:blur(8px);z-index:20;display:none;align-items:flex-end;justify-content:center;padding:16px}
+    .modal-backdrop.show{display:flex}
+    .modal{width:100%;max-width:430px;background:linear-gradient(180deg, rgba(21,24,34,0.98), rgba(10,12,18,0.98));border:1px solid rgba(255,255,255,0.08);border-radius:24px;box-shadow:var(--shadow);padding:18px}
+    .modal-title{font-family:'Sora',sans-serif;font-size:20px;margin-bottom:10px}
+    .modal-text{color:var(--text);font-size:14px;line-height:1.6;white-space:pre-wrap}
+    .modal-close{margin-top:14px;width:100%;min-height:48px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#061018;font:inherit;font-weight:700;cursor:pointer}
+  
+    .tiny.active{background:linear-gradient(180deg, rgba(125,143,255,0.20), rgba(113,215,255,0.08));border-color:rgba(125,143,255,0.35)}
+    .edit-backdrop{
+      position:fixed; inset:0; background:rgba(4,6,10,0.72); backdrop-filter:blur(8px); z-index:40;
+      display:none; align-items:flex-end; justify-content:center; padding:16px;
+    }
+    .edit-backdrop.show{display:flex}
+    .edit-modal{
+      width:100%; max-width:430px; background:linear-gradient(180deg, rgba(21,24,34,0.98), rgba(10,12,18,0.98));
+      border:1px solid rgba(255,255,255,0.08); border-radius:24px; box-shadow:var(--shadow); padding:18px;
+    }
+    .edit-modal textarea{
+      min-height:120px;
+    }
+    .edit-filter{margin:12px 0 10px}
+    .edit-input{width:100%;min-height:48px;border:none;outline:none;background:rgba(255,255,255,0.03);color:var(--text);padding:14px 16px;border-radius:18px;font:inherit;line-height:1.5;border:1px solid rgba(255,255,255,0.06)}
+    .edit-input::placeholder{color:#7f8aa1}
+    .edit-role-list{display:grid;gap:10px;max-height:280px;overflow:auto;margin-top:10px}
+    .edit-role-list .role-card{margin-bottom:0}
+
+
+  
+    #aiPanel{display:none!important}
+    .ai-leaf{
+      position:fixed; inset:0; z-index:95; display:none; overflow:auto;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(125,143,255,0.14), transparent 35%),
+        radial-gradient(circle at 80% 10%, rgba(113,215,255,0.10), transparent 28%),
+        linear-gradient(180deg, #07080c 0%, #090b10 100%);
+    }
+    .ai-leaf.show{display:block}
+    .ai-leaf-shell{width:100%;max-width:460px;margin:0 auto;padding:14px 14px 28px}
+    .ai-leaf-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+    .ai-leaf-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.08); border-radius:22px; box-shadow:var(--shadow);
+      padding:18px; margin-bottom:14px;
+    }
+    .ai-leaf-title{font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+    .ai-leaf-meta{font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+    .ai-leaf-text{
+      width:100%;min-height:320px;resize:vertical;border:none;outline:none;
+      background:rgba(255,255,255,0.03);color:var(--text);padding:14px;border-radius:18px;
+      font:inherit;line-height:1.55;border:1px solid rgba(255,255,255,0.06);
+    }
+    .ai-leaf-depth{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .ai-leaf-chip{
+      min-height:36px;padding:0 12px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);color:var(--text);font-size:13px;cursor:pointer;
+    }
+    .ai-leaf-chip.active{
+      background:linear-gradient(180deg, rgba(125,143,255,0.20), rgba(113,215,255,0.08));
+      border-color:rgba(125,143,255,0.35);
+    }
+
+  
+    .ai-page{
+      position:fixed; inset:0; z-index:95; display:none; overflow:auto;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(125,143,255,0.14), transparent 35%),
+        radial-gradient(circle at 80% 10%, rgba(113,215,255,0.10), transparent 28%),
+        linear-gradient(180deg, #07080c 0%, #090b10 100%);
+      color:var(--text);
+    }
+    .ai-page.show{display:block}
+    .ai-page-shell{width:100%;max-width:460px;margin:0 auto;padding:16px}
+    .ai-page-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow:var(--shadow);
+      border-radius:22px;
+      padding:18px;
+      margin-bottom:14px;
+    }
+    .ai-page-title{font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+    .ai-page-meta{font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+    .ai-page-lead{color:var(--muted);font-size:14px;line-height:1.55;margin-top:8px}
+    .ai-page-label{font-size:12px;color:var(--soft);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px}
+    .ai-page-textarea{
+      width:100%;min-height:190px;resize:vertical;border:none;outline:none;
+      background:rgba(255,255,255,0.03);color:var(--text);padding:14px;border-radius:18px;
+      font:inherit;line-height:1.55;border:1px solid rgba(255,255,255,0.06);
+    }
+    .ai-page-textarea::placeholder{color:#72809a}
+    .ai-page-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .ai-page-chip{
+      min-height:36px;padding:0 12px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);color:var(--text);font-size:13px;cursor:pointer;
+    }
+    .ai-page-chip.active{
+      background:linear-gradient(180deg, rgba(125,143,255,0.20), rgba(113,215,255,0.08));
+      border-color:rgba(125,143,255,0.35);
+    }
+    .ai-page-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .ai-page-btn{
+      min-height:46px;border:none;border-radius:16px;font:inherit;font-weight:700;cursor:pointer;padding:0 14px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));color:#061018;width:100%;
+      box-shadow:0 10px 24px rgba(90,130,255,.18);
+    }
+    .ai-page-btn.secondary{
+      background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:var(--text);
+    }
+    .ai-page-btn[disabled]{opacity:.65;cursor:wait}
+    .ai-page-status{color:var(--muted);font-size:13px;line-height:1.5;min-height:22px;margin-bottom:10px}
+    .ai-page-status.busy{color:var(--text)}
+    .ai-page-status.error{color:#ff8f8f}
+    .ai-page-output{white-space:pre-wrap;line-height:1.62;font-size:15px;color:var(--text)}
+    .ai-page-spinner{
+      display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.25);
+      border-top-color:var(--accent2);border-radius:50%;animation:spin 0.8s linear infinite;
+      margin-right:8px;vertical-align:-2px;
+    }
+
+  
+    .ai-page-shell .badge{margin-bottom:0}
+    .ai-page-card .summary-text{line-height:1.55}
+    .ai-page-card .label, .ai-page-label{
+      color:var(--soft);
+      font-family:monospace;
+      font-size:11px;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+    .ai-page-row .ai-page-btn{
+      transition:transform .12s ease, opacity .12s ease;
+    }
+    .ai-page-row .ai-page-btn:active{
+      transform:translateY(1px);
+    }
+    .ai-page-card{
+      position:relative;
+      overflow:hidden;
+    }
+    .ai-page-card::before{
+      content:'';
+      position:absolute;
+      inset:0 0 auto 0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+      pointer-events:none;
+    }
+
+  
+    .ai-page{
+      height:100vh;
+      overflow:hidden;
+    }
+    .ai-page-shell{
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      max-width:460px;
+      padding:12px;
+    }
+    .ai-page-card{
+      flex:0 0 auto;
+    }
+    .ai-page-maincard{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .ai-page-tabrow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .ai-page-tab{
+      min-height:36px;
+      padding:0 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      font-size:13px;
+      cursor:pointer;
+    }
+    .ai-page-tab.active{
+      background:linear-gradient(180deg, rgba(125,143,255,0.20), rgba(113,215,255,0.08));
+      border-color:rgba(125,143,255,0.35);
+    }
+    .ai-flip-wrap{
+      position:relative;
+      margin-top:0;
+      margin-bottom:0;
+      flex:1 1 auto;
+      min-height:0;
+      perspective:1200px;
+      margin-top:4px;
+      margin-bottom:12px;
+    }
+    .ai-flip-card{
+      position:relative;
+      width:100%;
+      height:100%;
+      transform-style:preserve-3d;
+      transition:transform .45s ease;
+    }
+    .ai-flip-card.is-flipped{
+      transform:rotateY(180deg);
+    }
+    .ai-face{
+      position:absolute;
+      inset:0;
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+    }
+    .ai-face-back{
+      transform:rotateY(180deg);
+    }
+    .ai-page-maintext{
+      min-height:100%;
+      height:100%;
+      resize:none;
+    }
+    .ai-page-row{
+      margin-top:auto;
+      flex:0 0 auto;
+    }
+
+  
+    .ai-page-maincard{
+      justify-content:space-between;
+    }
+    .ai-flip-wrap{
+      flex:1 1 auto;
+      display:flex;
+    }
+    .ai-flip-card{
+      flex:1 1 auto;
+    }
+
+  
+    .ai-page-card:first-of-type{
+      padding:16px 18px;
+    }
+    .ai-page-head{
+      margin-bottom:10px;
+    }
+    .ai-page-meta{
+      margin-top:4px;
+    }
+    .ai-page-row .ai-page-btn.secondary{
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow:none;
+    }
+    .ai-page-row .ai-page-btn.secondary:hover{
+      background:rgba(255,255,255,0.06);
+    }
+    .ai-page-row .ai-page-btn:first-child{
+      grid-column:1 / -1;
+      min-height:50px;
+      font-size:18px;
+      letter-spacing:.02em;
+    }
+    .ai-page-card + .ai-page-card{
+      margin-top:0;
+    }
+    .ai-page-tabrow{
+      margin-bottom:10px;
+    }
+    @media (max-width: 380px){
+      .ai-page-row{grid-template-columns:1fr}
+      .ai-page-row .ai-page-btn:first-child,
+      .ai-page-row .ai-page-btn:last-child{grid-column:auto}
+    }
+
+  
+    .ai-page-topcard{
+      padding:14px 16px;
+    }
+    .ai-page-topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .ai-page-titlewrap{
+      min-width:0;
+    }
+    .ai-page-topactions{
+      display:flex;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    .ai-icon-btn{
+      width:42px;
+      height:42px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      font:inherit;
+      font-size:20px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:none;
+    }
+    .ai-icon-btn:active{
+      transform:translateY(1px);
+    }
+    .ai-page-texthead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:2px;
+    }
+    .ai-mini-copy{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      font:inherit;
+      font-size:14px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      line-height:1;
+      flex:0 0 auto;
+    }
+    .ai-page-shell{
+      padding-top:10px;
+    }
+    .ai-page-maintext{
+      font-size:15px;
+      min-height:100%;
+    }
+    .ai-page-card:first-of-type{
+      padding:14px 16px;
+    }
+
+  
+    .ai-page-topcard{
+      padding:14px 16px;
+    }
+    .ai-page-topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .ai-page-title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .ai-page-topactions{
+      display:flex;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    .ai-icon-btn{
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      font:inherit;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .ai-icon-btn:active{transform:translateY(1px)}
+
+  
+    .ai-page{
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .ai-page-shell{
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+    .ai-page-topcard{
+      padding:14px 16px;
+    }
+    .ai-page-title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .ai-page-topactions{
+      display:flex;
+      gap:10px;
+      flex:0 0 auto;
+    }
+    .ai-icon-btn{
+      width:38px;
+      height:38px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+      color:var(--text);
+      font:inherit;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 8px 20px rgba(0,0,0,0.24);
+      backdrop-filter: blur(8px);
+    }
+    .ai-icon-btn:active{
+      transform:translateY(1px);
+    }
+    .ai-page-row{
+      padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+      margin-bottom: 4px;
+    }
+    .ai-page-row .ai-page-btn:first-child{
+      min-height:54px;
+      font-size:19px;
+    }
+    .ai-page-maincard{
+      padding-bottom: 14px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top">
+      <div class="brand">
+        <div>
+          <div class="brand-title">ПРОМТМЕЙСТЕР</div>
+        </div>
+        <div class="header-right">
+          <div class="mode-topbox">
+            <div class="mode-label-wrap">
+              <div class="mode-label">Mode</div>
+              <div class="mode-help">глубина конфигурации</div>
+            </div>
+            <select id="modeSelect" class="mode-select" aria-label="Режим глубины">
+              <option value="light">Light</option>
+              <option value="pedant">Pedant</option>
+              <option value="nightmare">Nightmare</option>
+            </select>
+          </div>
+          <button class="copy-icon hidden" id="copyTopBtn" title="Копировать">📋</button>
+        </div>
+      </div>
+      <div class="step-tools">
+        <div class="nav-actions">
+          <button class="back-btn hidden" id="backBtn">Назад</button>
+          <button class="back-btn" id="restartBtn">Начать сначала</button>
+        </div>
+        <div class="brand-meta hidden" id="stepHint"></div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="screens">
+      <section class="screen active" id="screen1">
+        <div class="badge" id="badge1">Шаг 1</div>
+        <h1>Выбери основное направление</h1>
+        <p class="lead">Сначала задай общий контекст. Так системе проще собрать правильный режим.</p>
+        <div class="filter-box">
+          <input class="filter-input" id="directionFilter" placeholder="Поиск по направлениям" autocomplete="off" />
+          <div class="suggest-box" id="directionSuggest"></div>
+        </div>
+        <div class="selected-preview hidden" id="directionPreview">
+          <div class="summary-title">Выбор</div>
+          <div class="summary-text" id="directionPreviewText"></div>
+        </div>
+        <div class="card" id="mainDirectionsCard">
+          <div class="label">Направление</div>
+          <div class="options" id="mainDirections"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen2">
+        <div class="badge" id="badge2">Шаг 2</div>
+        <h1>Уточни специализацию</h1>
+        <p class="lead">Теперь выбираем более узкую область внутри выбранного направления.</p>
+        <div class="summary-strip"><div class="summary-title">Выбрано</div><div class="summary-text" id="summaryStep2"></div></div>
+        <div class="filter-box">
+          <input class="filter-input" id="subDirectionFilter" placeholder="Поиск по специализациям" autocomplete="off" />
+          <div class="suggest-box" id="subDirectionSuggest"></div>
+        </div>
+        <div class="selected-preview hidden" id="subDirectionPreview">
+          <div class="summary-title">Выбор</div>
+          <div class="summary-text" id="subDirectionPreviewText"></div>
+        </div>
+        <div class="card" id="subDirectionsCard">
+          <div class="label">Специализация</div>
+          <div class="options" id="subDirections"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen3">
+        <div class="badge" id="badge3">Шаг 3</div>
+        <h1>Как должен работать ИИ?</h1>
+        <p class="lead">Выбери режим мышления и стиль работы. Это и определяет поведение ответа.</p>
+        <div class="summary-strip"><div class="summary-title">Контекст</div><div class="summary-text" id="summaryStep3"></div></div>
+        <div class="filter-box">
+          <input class="filter-input" id="roleFilter" placeholder="Поиск по ролям" />
+        </div>
+        <div class="selected-preview hidden" id="rolePreview">
+          <div class="summary-title">Выбор</div>
+          <div class="summary-text" id="rolePreviewText"></div>
+        </div>
+        <div id="rolesBox"></div>
+      </section>
+
+      <section class="screen" id="screen4">
+        <div class="badge" id="badge4">Шаг 4</div>
+        <h1>Опиши задачу</h1>
+        <p class="lead">Теперь коротко опиши задачу в формате: контекст, суть, пример.</p>
+        <div class="summary-strip"><div class="summary-title">Режим</div><div class="summary-text" id="summaryStep4"></div></div>
+        <div class="card">
+          <div class="label">Задача</div>
+          <textarea id="taskText" placeholder="Контекст. Суть. Пример."></textarea>
+          <div class="small-actions">
+            <button class="tiny" data-example="Контекст: нужен лендинг для строительной компании. Суть: сделать в холодном premium стиле. Пример: строго, чисто, современно.">Лендинг</button>
+            <button class="tiny" data-example="Контекст: есть код интерфейса. Суть: найти слабые места и ошибки. Пример: дать краткий вывод и список правок.">Разбор кода</button>
+            <button class="tiny" data-example="Контекст: есть текущий интерфейс. Суть: улучшить без полного переписывания. Пример: сохранить логику, усилить UX.">Улучшить UI</button>
+          </div>
+          <div class="task-helper" style="display:grid;gap:10px;margin-top:12px">
+            <div class="selected-preview show" style="margin-bottom:0;padding:12px;border-radius:14px"><div class="summary-text"><strong>Контекст</strong> — где и для чего нужна задача.</div></div>
+            <div class="selected-preview show" style="margin-bottom:0;padding:12px;border-radius:14px"><div class="summary-text"><strong>Суть</strong> — что именно нужно сделать.</div></div>
+            <div class="selected-preview show" style="margin-bottom:0;padding:12px;border-radius:14px"><div class="summary-text"><strong>Пример</strong> — какой результат или стиль ты ждёшь.</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="label">Уточнения</div>
+          <div id="clarificationsBox"><div class="summary-text">Для текущей комбинации дополнительных уточнений не нужно.</div></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen5">
+        <div class="badge" id="badge5">Шаг 5</div>
+        <h1 id="modeExtraTitle5">Дополнительные вопросы</h1>
+        <div class="summary-strip"><div class="summary-title">Основа</div><div class="summary-text" id="summaryStep5"></div></div>
+        <div class="card" id="pedantQuestionsCard">
+          <div class="label">Вопросы режима Pedant</div>
+          <div class="mode-question-item">
+            <div class="question">Что привело к задаче?</div>
+            <input class="field-input" id="contextText" placeholder="Опиши ситуацию или фон задачи" />
+          </div>
+          <div class="mode-question-item">
+            <div class="question">Каким должен быть результат?</div>
+            <input class="field-input" id="resultTextInput" placeholder="Что именно должно получиться" />
+          </div>
+          <div class="mode-question-item">
+            <div class="question">Что ещё важно уточнить?</div>
+            <input class="field-input" id="modeClarifyText" placeholder="Доп. условия, ограничения, акценты" />
+          </div>
+        </div>
+        <div class="card hidden" id="nightmareQuestionsCardA">
+          <div class="label">Вопросы режима Nightmare · Часть 1</div>
+          <div class="mode-question-item">
+            <div class="question">Контекст</div>
+            <textarea id="nightContextText" placeholder="Что происходит, в какой ситуации нужна задача"></textarea>
+          </div>
+          <div class="mode-question-item">
+            <div class="question">Формат и структура ответа</div>
+            <input class="field-input" id="formatText" placeholder="Например: список, блоки, таблица, JSON" />
+          </div>
+          <div class="mode-question-item">
+            <div class="question">Что исключить?</div>
+            <input class="field-input" id="excludeText" placeholder="Что не нужно включать в ответ" />
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen6">
+        <div class="badge" id="badge6">Шаг 6</div>
+        <h1>Финальные уточнения режима Nightmare</h1>
+        <div class="summary-strip"><div class="summary-title">Основа</div><div class="summary-text" id="summaryStep6"></div></div>
+        <div class="card">
+          <div class="label">Вопросы режима Nightmare · Часть 2</div>
+          <div class="mode-question-item">
+            <div class="question">Каким должен быть финальный результат?</div>
+            <input class="field-input" id="nightResultText" placeholder="Опиши итоговый результат" />
+          </div>
+          <div class="mode-question-item">
+            <div class="question">Приведи пример желаемого результата</div>
+            <textarea id="exampleText" placeholder="Пример, образец, ориентир"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen7">
+        <div class="badge" id="resultBadge">Результат</div>
+        <div class="result-head">
+          <h1 style="margin-bottom:0;">Промт собран</h1>
+          <button class="inline-chip" id="aiVersionChip" type="button">Версия ИИ</button>
+        </div>
+        <div class="summary-strip"><div class="summary-title">Собрано из</div><div class="summary-text" id="summaryStep7"></div></div>
+        <div class="output">
+          <div class="result-text" id="resultText"></div>
+          <div class="built-with" id="builtWith"></div>
+          <div class="warn hidden" id="warnBox"></div>
+        </div>
+        <div class="ai-panel hidden" id="aiPanel">
+          <div class="ai-panel-title">Версии промта</div>
+          <div class="summary-text" id="aiVersionStatus" style="margin-bottom:10px;">Нажми «Версия ИИ», чтобы собрать усиленную AI-версию.</div>
+          <div class="small-actions" style="margin-bottom:10px;">
+            <button class="tiny active" id="userVersionTab" type="button">Версия пользователя</button>
+            <button class="tiny" id="aiVersionTab" type="button">Версия ИИ</button>
+          </div>
+          <textarea class="ai-panel-text" id="userVersionText" readonly></textarea>
+          <textarea class="ai-panel-text hidden" id="aiVersionText" readonly></textarea>
+          <div class="small-actions">
+            <button class="tiny" id="regenerateAiVersionBtn" type="button">Обновить ИИ</button>
+            <button class="tiny" id="editAiVersionBtn" type="button">Изменить</button>
+            <button class="tiny" id="copyAiVersionBtn" type="button">Копировать</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px;">
+          <div class="label">Сохранённые конфиги</div>
+          <div id="savedConfigsBox"><div class="summary-text">Пока ничего не сохранено.</div></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="mainBtn">Дальше</button>
+      <div class="btn-row hidden" id="resultActions">
+        <button class="btn secondary" id="editTaskBtn">Изменить задачу</button>
+        <button class="btn secondary" id="editModeBtn">Изменить режим</button>
+      </div>
+      <div class="btn-row hidden" id="saveActions">
+        <button class="btn secondary" id="saveConfigBtn">Сохранить</button>
+        <button class="btn secondary" id="resetAllBtn">Сбросить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="infoModal">
+    <div class="modal">
+      <div class="badge">Информация</div>
+      <div class="modal-title" id="infoTitle">Режим</div>
+      <div class="modal-text" id="infoText"></div>
+      <button class="modal-close" id="infoCloseBtn">Закрыть</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <textarea id="copyHelper" class="hidden" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;"></textarea>
+
+  <script>
+    const MAIN_DIRECTIONS = [
+      {id:"it",name:"ИТ"},
+      {id:"business",name:"Бизнес"},
+      {id:"education",name:"Обучение"},
+      {id:"marketing",name:"Маркетинг"},
+      {id:"health",name:"Здоровье"},
+      {id:"food",name:"Еда"},
+      {id:"music",name:"Музыка"},
+      {id:"art",name:"Живопись"},
+      {id:"travel",name:"Путешествия"},
+      {id:"life",name:"Жизнь"}
+    ];
+
+    const SUB_DIRECTIONS = {
+      it:[
+        {id:"frontend",name:"Фронтенд"},
+        {id:"backend",name:"Бэкенд"},
+        {id:"uiux",name:"UI/UX"},
+        {id:"mobile",name:"Мобильные приложения"},
+        {id:"debug",name:"Отладка"},
+        {id:"architecture",name:"Архитектура"},
+        {id:"automation",name:"Автоматизация"}
+      ],
+      business:[
+        {id:"strategy",name:"Стратегия"},
+        {id:"finance",name:"Финансы"},
+        {id:"operations",name:"Процессы"},
+        {id:"startup",name:"Стартап"},
+        {id:"sales",name:"Продажи"}
+      ],
+      education:[
+        {id:"explain",name:"Объяснение"},
+        {id:"practice",name:"Практика"},
+        {id:"roadmap",name:"План обучения"},
+        {id:"review",name:"Проверка"},
+        {id:"terms",name:"Термины"}
+      ],
+      marketing:[
+        {id:"ads",name:"Реклама"},
+        {id:"content",name:"Контент"},
+        {id:"funnels",name:"Воронки"},
+        {id:"branding",name:"Брендинг"},
+        {id:"audience",name:"Аудитория"}
+      ],
+      health:[
+        {id:"fitness",name:"Фитнес"},
+        {id:"nutrition",name:"Питание"},
+        {id:"mental",name:"Психология"},
+        {id:"habits",name:"Привычки"},
+        {id:"recovery",name:"Восстановление"}
+      ],
+      food:[
+        {id:"recipes",name:"Рецепты"},
+        {id:"diet",name:"Диеты"},
+        {id:"cooking",name:"Готовка"},
+        {id:"products",name:"Продукты"},
+        {id:"menu",name:"Меню"}
+      ],
+      music:[
+        {id:"theory",name:"Теория"},
+        {id:"composition",name:"Создание"},
+        {id:"instruments",name:"Инструменты"},
+        {id:"mixing",name:"Сведение"},
+        {id:"analysis",name:"Разбор"}
+      ],
+      art:[
+        {id:"drawing",name:"Рисование"},
+        {id:"painting",name:"Живопись"},
+        {id:"style",name:"Стиль"},
+        {id:"composition",name:"Композиция"},
+        {id:"inspiration",name:"Идеи"}
+      ],
+      travel:[
+        {id:"planning",name:"Планирование"},
+        {id:"routes",name:"Маршруты"},
+        {id:"budget",name:"Бюджет"},
+        {id:"places",name:"Места"},
+        {id:"tips",name:"Советы"}
+      ],
+      life:[
+        {id:"decisions",name:"Решения"},
+        {id:"relationships",name:"Отношения"},
+        {id:"productivity",name:"Продуктивность"},
+        {id:"goals",name:"Цели"},
+        {id:"balance",name:"Баланс"}
+      ]
+    };
+
+    const DIRECTION_ALIASES = {
+      it:["ит","айти","it","код","разработка","программирование","автоматизация"],
+      business:["бизнес","дело","компания","деньги","карьера","управление"],
+      education:["обучение","учеба","учиться","курсы","объяснение"],
+      marketing:["маркетинг","реклама","продвижение","контент"],
+      health:["здоровье","самочувствие","питание","фитнес","сон"],
+      food:["еда","питание","рецепты","готовка","меню"],
+      music:["музыка","трек","звук","сведение"],
+      art:["арт","живопись","рисование","картина","стиль"],
+      travel:["путешествия","поездка","туризм","маршрут"],
+      life:["жизнь","быт","отношения","цели","баланс"]
+    };
+
+    const SUB_DIRECTION_ALIASES = {
+      frontend:["фронтенд","верстка","html","css","js","интерфейс"],
+      backend:["бэкенд","сервер","api","база","backend"],
+      uiux:["ui","ux","дизайн","макет","удобство"],
+      mobile:["мобильные","android","ios","apk","приложение"],
+      debug:["отладка","ошибки","debug","баги"],
+      architecture:["архитектура","структура","система"],
+      automation:["автоматизация","скрипты","таблицы","apps script"],
+      strategy:["стратегия","план","направление"],
+      finance:["финансы","деньги","бюджет"],
+      operations:["процессы","операции","регламент"],
+      startup:["стартап","mvp","запуск"],
+      sales:["продажи","сделки","клиенты"],
+      explain:["объяснение","объяснить","понять"],
+      practice:["практика","упражнения","тренировка"],
+      roadmap:["план обучения","роадмап","roadmap"],
+      review:["проверка","ревью","разбор"],
+      terms:["термины","слова","понятия"],
+      ads:["реклама","ads","объявления"],
+      content:["контент","посты","контент план"],
+      funnels:["воронки","воронка"],
+      branding:["брендинг","бренд"],
+      audience:["аудитория","ца","целевая аудитория"],
+      fitness:["фитнес","тренировки","зал"],
+      nutrition:["питание","рацион","диета"],
+      mental:["психология","ментал","состояние"],
+      habits:["привычки","дисциплина"],
+      recovery:["восстановление","отдых"],
+      recipes:["рецепты","блюда"],
+      diet:["диеты","диета"],
+      cooking:["готовка","кухня"],
+      products:["продукты","ингредиенты"],
+      menu:["меню","рацион"],
+      theory:["теория","ноты"],
+      composition:["создание","композиция","сочинение"],
+      instruments:["инструменты","гитара","пианино"],
+      mixing:["сведение","звук","микс"],
+      analysis:["разбор","анализ"],
+      drawing:["рисование","скетч"],
+      painting:["живопись","краски"],
+      style:["стиль","манера"],
+      inspiration:["идеи","вдохновение"],
+      planning:["планирование","план"],
+      routes:["маршруты","маршрут"],
+      budget:["бюджет","траты"],
+      places:["места","локации"],
+      tips:["советы","лайфхаки"],
+      decisions:["решения","выбор"],
+      relationships:["отношения","пара"],
+      productivity:["продуктивность","тайм менеджмент"],
+      goals:["цели","цель"],
+      balance:["баланс","жизненный баланс"]
+    };
+
+    const ROLES = [
+      {id:"builder",name:"Исполнитель",description:"Делает и доводит до результата.",tag:"результат",preview:["Сначала результат","Потом короткое пояснение","Без лишних улучшений"]},
+      {id:"architect",name:"Архитектор",description:"Держит структуру и систему целиком.",tag:"система",preview:["Сначала структура","Потом решение по слоям","С контролем архитектуры"]},
+      {id:"analyst",name:"Аналитик",description:"Разбирает, сравнивает, ищет слабые места.",tag:"анализ",preview:["Краткий вывод","Разбор по пунктам","Риски и рекомендации"]},
+      {id:"friend",name:"Друг",description:"Пишет живо, мягко и по-человечески.",tag:"дружелюбно",preview:["Понятно и без сухости","С поддержкой","С практической пользой"]},
+      {id:"teacher",name:"Учитель",description:"Объясняет просто и ведёт по шагам.",tag:"обучение",preview:["Сначала суть","Потом шаги","Термины поясняются"]}
+    ];
+
+    const CLARIFICATION_RULES = {
+      rules:[
+        {id:"clarify_output_style",trigger:{role_mode:["builder","architect","analyst"]},question:"Нужен краткий ответ или подробный разбор?",options:["кратко","подробно"],priority:1},
+        {id:"clarify_explanation",trigger:{role_mode:["teacher"]},question:"Объяснять по шагам или сразу дать решение?",options:["по шагам","сразу решение"],priority:1},
+        {id:"clarify_tone",trigger:{role_mode:["friend"]},question:"Какой стиль общения нужен?",options:["неформальный","сбалансированный","серьёзный"],priority:2},
+        {id:"clarify_code_level",trigger:{sub_direction:["frontend","backend","mobile"]},question:"Какой уровень кода нужен?",options:["новичок","средний","продвинутый"],priority:1},
+        {id:"clarify_format",trigger:{main_direction:["marketing","food","music","art","travel","life"]},question:"В каком формате нужен результат?",options:["список","текст","структура"],priority:2}
+      ],
+      logic:{max_questions:2}
+    };
+
+    
+    const EXTENDED_SEARCH_DB = [
+  {
+    "id": "dir_biznes",
+    "name": "Бизнес",
+    "chips": [
+      "Старт",
+      "Прибыль",
+      "Бизнес модель",
+      "Анализ ниши",
+      "Точки роста"
+    ],
+    "aliases": [
+      "бизнес",
+      "дело",
+      "предпринимательство",
+      "компания"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_prodazhi",
+    "name": "Продажи",
+    "chips": [
+      "Скрипты",
+      "Возражения",
+      "Ведение клиента",
+      "Закрытие сделки",
+      "Повторные продажи"
+    ],
+    "aliases": [
+      "продажи",
+      "сбыт",
+      "сделки",
+      "продавец"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_marketing",
+    "name": "Маркетинг",
+    "chips": [
+      "Реклама",
+      "Контент",
+      "Целевая аудитория",
+      "Анализ конкурентов",
+      "Воронка продаж"
+    ],
+    "aliases": [
+      "маркетинг",
+      "реклама",
+      "продвижение",
+      "маркетолог"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_finansy",
+    "name": "Финансы",
+    "chips": [
+      "Бюджет",
+      "Траты",
+      "Личный бюджет",
+      "Денежный поток",
+      "Финансовый учет"
+    ],
+    "aliases": [
+      "финансы",
+      "деньги",
+      "бюджет",
+      "расходы"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_investicii",
+    "name": "Инвестиции",
+    "chips": [
+      "Активы",
+      "Риски",
+      "Выбор активов",
+      "Долгий горизонт",
+      "Пассивный доход"
+    ],
+    "aliases": [
+      "инвестиции",
+      "вложения",
+      "активы",
+      "пассивный доход"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_upravlenie",
+    "name": "Управление",
+    "chips": [
+      "Задачи",
+      "Контроль",
+      "Постановка задач",
+      "Управление сроками",
+      "Разбор ошибок"
+    ],
+    "aliases": [
+      "управление",
+      "менеджмент",
+      "руководство",
+      "процессы"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_peregovory",
+    "name": "Переговоры",
+    "chips": [
+      "Переговоры",
+      "Аргументы",
+      "Подготовка позиции",
+      "Сложный разговор",
+      "Поиск компромисса"
+    ],
+    "aliases": [
+      "переговоры",
+      "договориться",
+      "коммуникация",
+      "общение"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_karera",
+    "name": "Карьера",
+    "chips": [
+      "Вакансии",
+      "Доход",
+      "Поиск вакансий",
+      "Смена работы",
+      "Карьерный план"
+    ],
+    "aliases": [
+      "карьера",
+      "работа",
+      "вакансии",
+      "трудоустройство"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_frilans",
+    "name": "Фриланс",
+    "chips": [
+      "Заказы",
+      "Клиенты",
+      "Поиск заказов",
+      "Упаковка услуг",
+      "Ценообразование услуг"
+    ],
+    "aliases": [
+      "фриланс",
+      "удаленка",
+      "заказы",
+      "самозанятость"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_startapy",
+    "name": "Стартапы",
+    "chips": [
+      "Стартап",
+      "Бизнес идея",
+      "Проверка идеи",
+      "MVP продукта",
+      "Поиск инвестиций"
+    ],
+    "aliases": [
+      "стартап",
+      "mvp",
+      "запуск",
+      "новый бизнес"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_klienty",
+    "name": "Клиенты",
+    "chips": [
+      "Клиенты",
+      "Обратная связь",
+      "Работа с запросом",
+      "Удержание клиента",
+      "Разбор претензий"
+    ],
+    "aliases": [
+      "клиенты",
+      "сервис",
+      "поддержка",
+      "удержание"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_servis",
+    "name": "Сервис",
+    "chips": [
+      "Сервис",
+      "Качество",
+      "Стандарты обслуживания",
+      "Скорость ответа",
+      "Сложные случаи"
+    ],
+    "aliases": [
+      "сервис",
+      "обслуживание",
+      "поддержка",
+      "качество"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_logistika",
+    "name": "Логистика",
+    "chips": [
+      "Доставка",
+      "Склад",
+      "Маршрут доставки",
+      "Складской учет",
+      "Контроль сроков"
+    ],
+    "aliases": [
+      "логистика",
+      "доставка",
+      "перевозки",
+      "склад"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_proizvodstvo",
+    "name": "Производство",
+    "chips": [
+      "Производство",
+      "Брак продукции",
+      "Производственный цикл",
+      "Контроль качества",
+      "Оптимизация процесса"
+    ],
+    "aliases": [
+      "производство",
+      "завод",
+      "изготовление",
+      "процесс"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_zakupki",
+    "name": "Закупки",
+    "chips": [
+      "Закупки",
+      "Поставщики",
+      "Поиск поставщика",
+      "Сравнение предложений",
+      "Условия поставки"
+    ],
+    "aliases": [
+      "закупки",
+      "снабжение",
+      "поставки",
+      "поставщики"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_programmirovanie",
+    "name": "Программирование",
+    "chips": [
+      "Код",
+      "Ошибки",
+      "Разбор кода",
+      "Логика алгоритма",
+      "Архитектура решения"
+    ],
+    "aliases": [
+      "программирование",
+      "код",
+      "разработка",
+      "coding",
+      "прога"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_veb-razrabotka",
+    "name": "Веб-разработка",
+    "chips": [
+      "Верстка",
+      "Интерфейс",
+      "Адаптивный интерфейс",
+      "Клиентская логика",
+      "Отладка сайта"
+    ],
+    "aliases": [
+      "веб",
+      "frontend",
+      "backend",
+      "сайт",
+      "верстка"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_mobilnaya-razrabotka",
+    "name": "Мобильная разработка",
+    "chips": [
+      "Приложение",
+      "Экран",
+      "Интерфейс приложения",
+      "Логика экрана",
+      "Публикация приложения"
+    ],
+    "aliases": [
+      "мобильная разработка",
+      "android",
+      "ios",
+      "apk",
+      "приложение"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_analiz-dannyh",
+    "name": "Анализ данных",
+    "chips": [
+      "Данные",
+      "Анализ",
+      "Очистка данных",
+      "Визуализация данных",
+      "Проверка гипотез"
+    ],
+    "aliases": [
+      "анализ данных",
+      "аналитика",
+      "data",
+      "big data",
+      "данные"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_ii",
+    "name": "ИИ",
+    "chips": [
+      "Промт",
+      "Модель",
+      "Настройка промта",
+      "Анализ ответа",
+      "Поведение модели"
+    ],
+    "aliases": [
+      "ии",
+      "ai",
+      "нейросети",
+      "llm",
+      "модель"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_avtomatizaciya",
+    "name": "Автоматизация",
+    "chips": [
+      "Скрипты",
+      "Авто сценарии",
+      "Обработка данных",
+      "Связка сервисов",
+      "Экономия времени"
+    ],
+    "aliases": [
+      "автоматизация",
+      "скрипты",
+      "apps script",
+      "vba",
+      "сценарии"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_kiberbezopasnost",
+    "name": "Кибербезопасность",
+    "chips": [
+      "Защита",
+      "Угрозы",
+      "Анализ угроз",
+      "Проверка уязвимостей",
+      "Безопасность данных"
+    ],
+    "aliases": [
+      "кибербезопасность",
+      "security",
+      "защита",
+      "взлом"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_devops",
+    "name": "DevOps",
+    "chips": [
+      "Деплой",
+      "Сервер",
+      "Сборка проекта",
+      "Настройка деплоя",
+      "Мониторинг системы"
+    ],
+    "aliases": [
+      "devops",
+      "деплой",
+      "сервер",
+      "ci/cd"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_testirovanie",
+    "name": "Тестирование",
+    "chips": [
+      "Тесты",
+      "Баги",
+      "Тест кейсы",
+      "Поиск багов",
+      "Регресс тест"
+    ],
+    "aliases": [
+      "тестирование",
+      "qa",
+      "баги",
+      "тесты"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_ux-ui",
+    "name": "UX/UI",
+    "chips": [
+      "Дизайн",
+      "Интерфейс",
+      "Структура экрана",
+      "Пользовательский путь",
+      "Улучшение удобства"
+    ],
+    "aliases": [
+      "ux",
+      "ui",
+      "интерфейс",
+      "дизайн",
+      "макет"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_bazy-dannyh",
+    "name": "Базы данных",
+    "chips": [
+      "SQL",
+      "Таблицы",
+      "Структура таблиц",
+      "Оптимизация выборки",
+      "Связи сущностей"
+    ],
+    "aliases": [
+      "база данных",
+      "sql",
+      "таблицы",
+      "бд"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_integracii",
+    "name": "Интеграции",
+    "chips": [
+      "API",
+      "Потоки данных",
+      "Работа с API",
+      "Передача данных",
+      "Связка систем"
+    ],
+    "aliases": [
+      "интеграции",
+      "api",
+      "webhook",
+      "связка систем"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_sisadmin",
+    "name": "Сисадмин",
+    "chips": [
+      "Сервер",
+      "Сеть",
+      "Настройка сервера",
+      "Доступ пользователей",
+      "Диагностика сбоев"
+    ],
+    "aliases": [
+      "сисадмин",
+      "админ",
+      "сервер",
+      "сеть",
+      "администрирование"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_obuchenie",
+    "name": "Обучение",
+    "chips": [
+      "Практика",
+      "Навык",
+      "План обучения",
+      "Разбор темы",
+      "Проверка знаний"
+    ],
+    "aliases": [
+      "обучение",
+      "учеба",
+      "учиться",
+      "курсы"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_samorazvitie",
+    "name": "Саморазвитие",
+    "chips": [
+      "Цели",
+      "Привычки",
+      "Личные цели",
+      "Рост дисциплины",
+      "Зоны роста"
+    ],
+    "aliases": [
+      "саморазвитие",
+      "личностный рост",
+      "рост"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_navyki",
+    "name": "Навыки",
+    "chips": [
+      "Навык",
+      "Уровень",
+      "Развитие навыка",
+      "Практические упражнения",
+      "Путь улучшения"
+    ],
+    "aliases": [
+      "навыки",
+      "скиллы",
+      "умения"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_pamyat",
+    "name": "Память",
+    "chips": [
+      "Память",
+      "Запоминание",
+      "Техники запоминания",
+      "Повторение материала",
+      "Мнемо приемы"
+    ],
+    "aliases": [
+      "память",
+      "мнемоника",
+      "запоминание"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_koncentraciya",
+    "name": "Концентрация",
+    "chips": [
+      "Фокус",
+      "Внимание",
+      "Удержание внимания",
+      "Глубокая работа",
+      "Контроль усталости"
+    ],
+    "aliases": [
+      "концентрация",
+      "фокус",
+      "внимание"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_kriticheskoe-myshlenie",
+    "name": "Критическое мышление",
+    "chips": [
+      "Разбор",
+      "Логика",
+      "Проверка фактов",
+      "Логические ошибки",
+      "Обоснованный вывод"
+    ],
+    "aliases": [
+      "критическое мышление",
+      "логика",
+      "анализ"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_yazyki",
+    "name": "Языки",
+    "chips": [
+      "Язык",
+      "Слова",
+      "Грамматика языка",
+      "Разговорная практика",
+      "Письменная речь"
+    ],
+    "aliases": [
+      "языки",
+      "английский",
+      "иностранный язык"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_ekzameny",
+    "name": "Экзамены",
+    "chips": [
+      "Экзамен",
+      "Тест",
+      "Подготовка билетов",
+      "План повторения",
+      "Стратегия сдачи"
+    ],
+    "aliases": [
+      "экзамены",
+      "тесты",
+      "сдача"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_zdorove",
+    "name": "Здоровье",
+    "chips": [
+      "Здоровье",
+      "Симптомы",
+      "Образ жизни",
+      "Контроль факторов",
+      "Подготовка к врачу"
+    ],
+    "aliases": [
+      "здоровье",
+      "самочувствие",
+      "медицина"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_pitanie",
+    "name": "Питание",
+    "chips": [
+      "Рацион",
+      "Калории",
+      "Дневной рацион",
+      "Контроль калорий",
+      "Режим питания"
+    ],
+    "aliases": [
+      "питание",
+      "еда",
+      "рацион",
+      "диета"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_fitnes",
+    "name": "Фитнес",
+    "chips": [
+      "Тренировка",
+      "Кардио",
+      "План тренировки",
+      "Техника упражнений",
+      "Прогресс формы"
+    ],
+    "aliases": [
+      "фитнес",
+      "спорт",
+      "тренировки",
+      "зал"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_pohudenie",
+    "name": "Похудение",
+    "chips": [
+      "Вес",
+      "Диета",
+      "Дефицит калорий",
+      "Контроль веса",
+      "План снижения"
+    ],
+    "aliases": [
+      "похудение",
+      "сбросить вес",
+      "диета"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_son",
+    "name": "Сон",
+    "chips": [
+      "Сон",
+      "Режим",
+      "Режим сна",
+      "Качество отдыха",
+      "Гигиена сна"
+    ],
+    "aliases": [
+      "сон",
+      "засыпание",
+      "режим сна"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_psihologiya",
+    "name": "Психология",
+    "chips": [
+      "Эмоции",
+      "Мысли",
+      "Разбор состояния",
+      "Внутренний конфликт",
+      "Поддержка себя"
+    ],
+    "aliases": [
+      "психология",
+      "эмоции",
+      "мышление",
+      "состояние"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_stress",
+    "name": "Стресс",
+    "chips": [
+      "Стресс",
+      "Тревога",
+      "Снижение тревоги",
+      "Восстановление сил",
+      "Спокойная реакция"
+    ],
+    "aliases": [
+      "стресс",
+      "тревога",
+      "выгорание"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_privychki",
+    "name": "Привычки",
+    "chips": [
+      "Привычки",
+      "Поведение",
+      "Формирование привычки",
+      "Контроль срывов",
+      "Система повторов"
+    ],
+    "aliases": [
+      "привычки",
+      "дисциплина",
+      "поведение"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_byt",
+    "name": "Быт",
+    "chips": [
+      "Дом",
+      "Порядок",
+      "Домашние дела",
+      "Организация быта",
+      "Экономия времени"
+    ],
+    "aliases": [
+      "быт",
+      "дом",
+      "повседневность"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_planirovanie",
+    "name": "Планирование",
+    "chips": [
+      "План",
+      "Сроки",
+      "План недели",
+      "План дня",
+      "Приоритет задач"
+    ],
+    "aliases": [
+      "планирование",
+      "тайм-менеджмент",
+      "организация"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_pokupki",
+    "name": "Покупки",
+    "chips": [
+      "Товар",
+      "Цена",
+      "Выбор товара",
+      "Сравнение моделей",
+      "Реальные отзывы"
+    ],
+    "aliases": [
+      "покупки",
+      "товары",
+      "сравнение"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_puteshestviya",
+    "name": "Путешествия",
+    "chips": [
+      "Поездка",
+      "Маршрут",
+      "План поездки",
+      "Бюджет поездки",
+      "Документы выезда"
+    ],
+    "aliases": [
+      "путешествия",
+      "туризм",
+      "поездка",
+      "отдых"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_pereezd",
+    "name": "Переезд",
+    "chips": [
+      "Переезд",
+      "Жилье",
+      "План переезда",
+      "Подбор района",
+      "Организация вещей"
+    ],
+    "aliases": [
+      "переезд",
+      "релокация",
+      "жилье"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_gadzhety",
+    "name": "Гаджеты",
+    "chips": [
+      "Устройство",
+      "Настройки",
+      "Выбор устройства",
+      "Сравнение моделей",
+      "Решение проблем"
+    ],
+    "aliases": [
+      "гаджеты",
+      "техника",
+      "устройства"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_podbor-tehniki",
+    "name": "Подбор техники",
+    "chips": [
+      "Смартфоны",
+      "Ноутбуки",
+      "Бытовая техника",
+      "Игровые консоли",
+      "Сравнение моделей"
+    ],
+    "aliases": [
+      "подбор техники",
+      "выбор техники",
+      "техника",
+      "гаджеты выбор"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_avto",
+    "name": "Авто",
+    "chips": [
+      "Машина",
+      "Поломки",
+      "Обслуживание авто",
+      "Расход топлива",
+      "Юридические вопросы"
+    ],
+    "aliases": [
+      "авто",
+      "машины",
+      "тачки",
+      "автомобиль",
+      "car"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_dokumenty",
+    "name": "Документы",
+    "chips": [
+      "Документ",
+      "Заявление",
+      "Официальный текст",
+      "Подготовка заявления",
+      "Проверка формулировок"
+    ],
+    "aliases": [
+      "документы",
+      "бумаги",
+      "справки",
+      "оформление"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_pravo",
+    "name": "Право",
+    "chips": [
+      "Закон",
+      "Норма",
+      "Правовая норма",
+      "Разбор ситуации",
+      "Юридический риск"
+    ],
+    "aliases": [
+      "право",
+      "юрист",
+      "законы",
+      "юридический"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_zhkh",
+    "name": "ЖКХ",
+    "chips": [
+      "Жалоба",
+      "Услуги",
+      "Жалоба ЖКХ",
+      "Коммунальный спор",
+      "Фиксация ущерба"
+    ],
+    "aliases": [
+      "жкх",
+      "коммуналка",
+      "управляющая компания"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_gosuslugi",
+    "name": "Госуслуги",
+    "chips": [
+      "Жалоба",
+      "Обращение",
+      "Жалоба ЖКХ",
+      "Жалоба дороги",
+      "Жалоба на светофоры"
+    ],
+    "aliases": [
+      "госуслуги",
+      "гос услуги",
+      "жалобы",
+      "обращения",
+      "гос сервисы"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_stroitelstvo",
+    "name": "Строительство",
+    "chips": [
+      "Смета",
+      "Материалы",
+      "Смета работ",
+      "План монтажа",
+      "Контроль качества"
+    ],
+    "aliases": [
+      "строительство",
+      "стройка",
+      "ремонт",
+      "объект"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_elektrika",
+    "name": "Электрика",
+    "chips": [
+      "Схема",
+      "Кабель",
+      "Схема питания",
+      "Монтаж кабеля",
+      "Поиск неисправности"
+    ],
+    "aliases": [
+      "электрика",
+      "питание",
+      "кабель",
+      "электромонтаж"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_slabotochka",
+    "name": "Слаботочка",
+    "chips": [
+      "Кабель",
+      "Оборудование",
+      "Монтаж системы",
+      "Пусконаладка системы",
+      "Исполнительная документация"
+    ],
+    "aliases": [
+      "слаботочка",
+      "апс",
+      "скуд",
+      "видеонаблюдение"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_igry",
+    "name": "Игры",
+    "chips": [
+      "Правила",
+      "Тактика",
+      "Игровые приемы",
+      "Разбор ошибок",
+      "Полезные лайфхаки"
+    ],
+    "aliases": [
+      "игры",
+      "гейминг",
+      "игра",
+      "games"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_kontent",
+    "name": "Контент",
+    "chips": [
+      "Идеи",
+      "Посты",
+      "Контент план",
+      "Формат контента",
+      "Рост охвата"
+    ],
+    "aliases": [
+      "контент",
+      "посты",
+      "медиа",
+      "блог"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_video",
+    "name": "Видео",
+    "chips": [
+      "Видео",
+      "Монтаж",
+      "Сценарий ролика",
+      "Монтаж ритма",
+      "Работа со звуком"
+    ],
+    "aliases": [
+      "видео",
+      "ролики",
+      "монтаж",
+      "youtube"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_muzyka",
+    "name": "Музыка",
+    "chips": [
+      "Музыка",
+      "Бит",
+      "Создание мелодии",
+      "Подбор аккордов",
+      "Разбор композиции"
+    ],
+    "aliases": [
+      "музыка",
+      "трек",
+      "звук"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_dizain",
+    "name": "Дизайн",
+    "chips": [
+      "Дизайн",
+      "Цвет",
+      "Подбор цвета",
+      "Компоновка элементов",
+      "Визуальный стиль"
+    ],
+    "aliases": [
+      "дизайн",
+      "графика",
+      "визуал"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_foto",
+    "name": "Фото",
+    "chips": [
+      "Фото",
+      "Свет",
+      "Съемка кадра",
+      "Обработка фото",
+      "Композиция кадра"
+    ],
+    "aliases": [
+      "фото",
+      "фотография"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_otnosheniya",
+    "name": "Отношения",
+    "chips": [
+      "Пара",
+      "Конфликт",
+      "Партнерский конфликт",
+      "Разговор о проблеме",
+      "Доверие в паре"
+    ],
+    "aliases": [
+      "отношения",
+      "семья",
+      "любовь",
+      "пара"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_obschenie",
+    "name": "Общение",
+    "chips": [
+      "Речь",
+      "Диалог",
+      "Тон разговора",
+      "Сложный диалог",
+      "Уверенная речь"
+    ],
+    "aliases": [
+      "общение",
+      "коммуникация",
+      "разговор"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_socseti",
+    "name": "Соцсети",
+    "chips": [
+      "Профиль",
+      "Подписчики",
+      "Оформление профиля",
+      "Рост аудитории",
+      "Анализ вовлечения"
+    ],
+    "aliases": [
+      "соцсети",
+      "социальные сети",
+      "instagram",
+      "telegram",
+      "tiktok"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "dir_netvorking",
+    "name": "Нетворкинг",
+    "chips": [
+      "Связи",
+      "Контакты",
+      "Новые знакомства",
+      "Деловые связи",
+      "Краткая презентация"
+    ],
+    "aliases": [
+      "нетворкинг",
+      "связи",
+      "знакомства",
+      "контакты"
+    ],
+    "kind": "direction"
+  },
+  {
+    "id": "theme_excel",
+    "name": "Excel",
+    "chips": [
+      "Формулы",
+      "Сводные таблицы",
+      "Обработка данных",
+      "Автоматизация",
+      "Ошибки формул"
+    ],
+    "aliases": [
+      "excel",
+      "эксель",
+      "xls"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_google-sheets",
+    "name": "Google Sheets",
+    "chips": [
+      "Формулы",
+      "Импорт данных",
+      "Скрипты",
+      "Общий доступ",
+      "Ошибки расчетов"
+    ],
+    "aliases": [
+      "google sheets",
+      "гугл таблицы",
+      "таблицы гугл",
+      "gsheets"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_autocad",
+    "name": "AutoCAD",
+    "chips": [
+      "Чертеж",
+      "Слои",
+      "Работа слоями",
+      "Подготовка печати",
+      "Ошибки модели"
+    ],
+    "aliases": [
+      "autocad",
+      "автокад",
+      "cad"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_photoshop",
+    "name": "Photoshop",
+    "chips": [
+      "Ретушь",
+      "Слои",
+      "Обработка изображения",
+      "Цветокоррекция фото",
+      "Экспорт файла"
+    ],
+    "aliases": [
+      "photoshop",
+      "фотошоп"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_figma",
+    "name": "Figma",
+    "chips": [
+      "Макет",
+      "Компоненты",
+      "Макет интерфейса",
+      "Сетка элементов",
+      "Прототипирование"
+    ],
+    "aliases": [
+      "figma",
+      "фигма"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_word",
+    "name": "Word",
+    "chips": [
+      "Текст",
+      "Форматирование",
+      "Стили документа",
+      "Оглавление документа",
+      "Проверка ошибок"
+    ],
+    "aliases": [
+      "word",
+      "ворд"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_powerpoint",
+    "name": "PowerPoint",
+    "chips": [
+      "Слайды",
+      "Анимация",
+      "Дизайн слайдов",
+      "Структура доклада",
+      "Экспорт презентации"
+    ],
+    "aliases": [
+      "powerpoint",
+      "пауэрпоинт",
+      "презентация"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_blender",
+    "name": "Blender",
+    "chips": [
+      "3D",
+      "Рендер",
+      "3D моделирование",
+      "Освещение сцены",
+      "Анимация объекта"
+    ],
+    "aliases": [
+      "blender",
+      "блендер"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_vs-code",
+    "name": "VS Code",
+    "chips": [
+      "Код",
+      "Отладка",
+      "Работа с кодом",
+      "Расширения редактора",
+      "Запуск проекта"
+    ],
+    "aliases": [
+      "vs code",
+      "vscode",
+      "визуал студио код"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_notion",
+    "name": "Notion",
+    "chips": [
+      "Заметки",
+      "База",
+      "Структура базы",
+      "План задач",
+      "Шаблоны страниц"
+    ],
+    "aliases": [
+      "notion",
+      "ноушен"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_fifa",
+    "name": "FIFA",
+    "chips": [
+      "Тактика",
+      "Команда",
+      "Игровые приемы",
+      "Анализ матчей",
+      "Карьера игрока"
+    ],
+    "aliases": [
+      "fifa",
+      "фифа"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_gta",
+    "name": "GTA",
+    "chips": [
+      "Миссии",
+      "Мир",
+      "Прохождение миссий",
+      "Скрытые механики",
+      "Онлайн режим"
+    ],
+    "aliases": [
+      "gta",
+      "гта"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_cs2",
+    "name": "CS2",
+    "chips": [
+      "Стрельба",
+      "Карты",
+      "Тактика раунда",
+      "Командная игра",
+      "Разбор ошибок"
+    ],
+    "aliases": [
+      "cs2",
+      "кс2",
+      "контра",
+      "cs go",
+      "кс го"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_dota-2",
+    "name": "Dota 2",
+    "chips": [
+      "Герои",
+      "Линия",
+      "Выбор героя",
+      "Предметы героя",
+      "Командные действия"
+    ],
+    "aliases": [
+      "dota",
+      "дота",
+      "дота 2"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_minecraft",
+    "name": "Minecraft",
+    "chips": [
+      "Крафт",
+      "Выживание",
+      "Строительство базы",
+      "Игровые режимы",
+      "Моды игры"
+    ],
+    "aliases": [
+      "minecraft",
+      "майнкрафт"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_rep",
+    "name": "Рэп",
+    "chips": [
+      "Текст",
+      "Рифмы",
+      "Тексты треков",
+      "Флоу исполнителя",
+      "Запись вокала"
+    ],
+    "aliases": [
+      "рэп",
+      "rap"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_rok",
+    "name": "Рок",
+    "chips": [
+      "Группа",
+      "Гитара",
+      "Гитарные партии",
+      "История жанра",
+      "Анализ альбома"
+    ],
+    "aliases": [
+      "рок",
+      "rock"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_edm",
+    "name": "EDM",
+    "chips": [
+      "Бит",
+      "Звук",
+      "Создание бита",
+      "Структура трека",
+      "Мастеринг звука"
+    ],
+    "aliases": [
+      "edm",
+      "электронная музыка"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_filmy",
+    "name": "Фильмы",
+    "chips": [
+      "Фильм",
+      "Жанры",
+      "Подбор фильма",
+      "Анализ сюжета",
+      "Разбор персонажей"
+    ],
+    "aliases": [
+      "фильмы",
+      "кино",
+      "movie"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_serialy",
+    "name": "Сериалы",
+    "chips": [
+      "Сериал",
+      "Сезоны",
+      "Подбор сериала",
+      "Сюжет линии",
+      "Разбор героев"
+    ],
+    "aliases": [
+      "сериалы",
+      "сериал",
+      "series"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_futbol",
+    "name": "Футбол",
+    "chips": [
+      "Матч",
+      "Тактика",
+      "Разбор матча",
+      "Позиции игроков",
+      "Тренировка игрока"
+    ],
+    "aliases": [
+      "футбол",
+      "soccer"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_tennis",
+    "name": "Теннис",
+    "chips": [
+      "Удар",
+      "Подача",
+      "Техника удара",
+      "Тактика игры",
+      "Разбор партии"
+    ],
+    "aliases": [
+      "теннис"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_trenazhernyi-zal",
+    "name": "Тренажерный зал",
+    "chips": [
+      "Тренировка",
+      "Упражнения",
+      "План тренировки",
+      "Техника упражнения",
+      "Рост мышц"
+    ],
+    "aliases": [
+      "тренажерный зал",
+      "зал",
+      "gym"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_smartfony",
+    "name": "Смартфоны",
+    "chips": [
+      "Телефон",
+      "Модель",
+      "Выбор модели",
+      "Настройка телефона",
+      "Решение проблем"
+    ],
+    "aliases": [
+      "смартфоны",
+      "смартфон",
+      "телефон",
+      "мобильник"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_noutbuki",
+    "name": "Ноутбуки",
+    "chips": [
+      "Ноутбук",
+      "Производительность",
+      "Выбор ноутбука",
+      "Сравнение моделей",
+      "Настройка работы"
+    ],
+    "aliases": [
+      "ноутбуки",
+      "ноутбук",
+      "ноут",
+      "laptop"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_dogovor",
+    "name": "Договор",
+    "chips": [
+      "Договор",
+      "Условия",
+      "Структура договора",
+      "Проверка условий",
+      "Юридические риски"
+    ],
+    "aliases": [
+      "договор",
+      "договоры"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_akt",
+    "name": "Акт",
+    "chips": [
+      "Акт",
+      "Ущерб",
+      "Фиксация ущерба",
+      "Описание ситуации",
+      "Подписи сторон"
+    ],
+    "aliases": [
+      "акт",
+      "акт затопления"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_aps",
+    "name": "АПС",
+    "chips": [
+      "Пожарка",
+      "Система",
+      "Схема системы",
+      "Подбор оборудования",
+      "Пусконаладка"
+    ],
+    "aliases": [
+      "апс",
+      "пожарка",
+      "пожарная сигнализация"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_skud",
+    "name": "СКУД",
+    "chips": [
+      "Доступ",
+      "Контроллер",
+      "Схема доступа",
+      "Настройка доступа",
+      "Проверка работы"
+    ],
+    "aliases": [
+      "скуд",
+      "доступ",
+      "контроль доступа"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_videonablyudenie",
+    "name": "Видеонаблюдение",
+    "chips": [
+      "Камеры",
+      "Запись",
+      "Размещение камер",
+      "Настройка записи",
+      "Проверка сигнала"
+    ],
+    "aliases": [
+      "видеонаблюдение",
+      "камеры",
+      "cctv"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_remont",
+    "name": "Ремонт",
+    "chips": [
+      "Ремонт",
+      "Материалы",
+      "План ремонта",
+      "Смета работ",
+      "Ошибки ремонта"
+    ],
+    "aliases": [
+      "ремонт",
+      "ремонт квартиры"
+    ],
+    "kind": "theme"
+  },
+  {
+    "id": "theme_uborka",
+    "name": "Уборка",
+    "chips": [
+      "Уборка",
+      "Чистка",
+      "План уборки",
+      "Генеральная уборка",
+      "Средства чистки"
+    ],
+    "aliases": [
+      "уборка",
+      "чистка"
+    ],
+    "kind": "theme"
+  }
+];
+
+    function mergeExtendedSearchDb(){
+      const existingNames = new Set(MAIN_DIRECTIONS.map(item => normalizeSearchValue(item.name)));
+      EXTENDED_SEARCH_DB.forEach(entry => {
+        const nameKey = normalizeSearchValue(entry.name);
+        if(!existingNames.has(nameKey)){
+          MAIN_DIRECTIONS.push({ id: entry.id, name: entry.name, kind: entry.kind });
+          existingNames.add(nameKey);
+        }
+        SUB_DIRECTIONS[entry.id] = (entry.chips || []).map((chip, index) => ({
+          id: entry.id + '_chip_' + index,
+          name: chip
+        }));
+        SUB_DIRECTION_ALIASES[entry.id] = (entry.aliases || []).slice();
+      });
+      EXTENDED_SEARCH_DB.forEach(entry => {
+        DIRECTION_ALIASES[entry.id] = Array.from(new Set([entry.name, ...(entry.aliases || [])]));
+        (entry.chips || []).forEach((chip, index) => {
+          SUB_DIRECTION_ALIASES[entry.id + '_chip_' + index] = [chip];
+        });
+      });
+    }
+
+    mergeExtendedSearchDb();
+
+    const ROLE_LIBRARY = {
+      builder:{title:"опытный практичный специалист",behavior:["давай рабочее решение без лишней воды","если задача техническая — сначала покажи результат","исправляй ошибки, если видишь явную проблему","не добавляй улучшения без запроса"],output:["сначала решение","затем краткое пояснение"]},
+      architect:{title:"системный архитектор",behavior:["держи общую структуру решения","смотри на связи между частями системы","если есть архитектурный риск — укажи его","не предлагай хаотичные локальные правки без общей логики"],output:["сначала структура решения","затем ключевые шаги реализации"]},
+      analyst:{title:"точный аналитик",behavior:["не спеши с выводами","разделяй факты, риски и рекомендации","если информации мало — укажи это явно","не переходи к коду, если задача аналитическая"],output:["сначала краткий вывод","затем разбор по пунктам","в конце рекомендации"]},
+      friend:{title:"дружелюбный помощник",behavior:["пиши живо и понятно","поддерживай пользователя, но не лей воду","не уходи в излишнюю официальность","сохраняй практическую полезность"],output:["дай понятный человеческий ответ","если уместно — добавь мягкую рекомендацию"]},
+      teacher:{title:"понятный наставник",behavior:["объясняй простым языком","сложные термины кратко поясняй в скобках","веди по шагам, если это полезно","не перегружай человека лишней теорией"],output:["сначала дай суть","потом коротко объясни шаги","если уместно — добавь мини-пример"]}
+    };
+
+    const MODE_MAP = {
+      light: { label:'Light', questionPages:4 },
+      pedant: { label:'Pedant', questionPages:5 },
+      nightmare: { label:'Nightmare', questionPages:6 }
+    };
+
+    const state = {
+      mode:'light', step:1,
+      main_direction:'', sub_direction:'', role_mode:'', task_text:'', clarifications:{},
+      custom_main_direction:'', custom_sub_direction:'',
+      main_matched_entry_id:'', main_matched_entry_kind:'',
+      pedant_context:'', pedant_result:'', pedant_extra:'',
+      night_context:'', night_format:'', night_exclude:'', night_result:'', night_example:''
+    };
+
+    const STORAGE_KEYS = { draft:'promtmeister_draft_v3', saved:'promtmeister_saved_v3' };
+
+    const screens = [1,2,3,4,5,6,7].reduce((a,n)=>(a[n]=document.getElementById(`screen${n}`),a),{});
+    const progress = document.getElementById('progress');
+    const mainBtn = document.getElementById('mainBtn');
+    const resultActions = document.getElementById('resultActions');
+    const saveActions = document.getElementById('saveActions');
+    const copyTopBtn = document.getElementById('copyTopBtn');
+    const backBtn = document.getElementById('backBtn');
+    const stepHint = document.getElementById('stepHint');
+    const resultTextEl = document.getElementById('resultText');
+    const builtWith = document.getElementById('builtWith');
+    const warnBox = document.getElementById('warnBox');
+    const aiPanel = document.getElementById('aiPanel');
+    const aiVersionText = document.getElementById('aiVersionText');
+    const userVersionText = document.getElementById('userVersionText');
+    const userVersionTab = document.getElementById('userVersionTab');
+    const aiVersionTab = document.getElementById('aiVersionTab');
+
+    function cleanText(v){ return String(v || '').replace(/\s+/g,' ').trim(); }
+    function getMainName(id){
+      if(id === '__custom__') return cleanText(state.custom_main_direction || '');
+      const x = MAIN_DIRECTIONS.find(v=>v.id===id);
+      return x ? x.name : id;
+    }
+    function getSubName(mainId, subId){
+      if(subId === '__custom__') return cleanText(state.custom_sub_direction || '');
+      const list = SUB_DIRECTIONS[mainId] || [];
+      const x = list.find(v=>v.id===subId);
+      return x ? x.name : subId;
+    }
+    function getRoleName(id){ const x = ROLES.find(v=>v.id===id); return x ? x.name : id; }
+    function getShortDate(d = new Date()){ const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=String(d.getFullYear()).slice(-2); return `${dd}.${mm}.${yy}`; }
+    function buildSaveTitle(snapshot){ return `${MODE_MAP[snapshot.mode].label} · ${getMainName(snapshot.main_direction)} · ${getShortDate()}`; }
+    function getQuestionPagesCount(){ return (MODE_MAP[state.mode] || MODE_MAP.light).questionPages; }
+    function isResultStep(step = state.step){ return step === 7; }
+    function getLastQuestionStep(){ return getQuestionPagesCount(); }
+
+    function buildProgress(){
+      const total = getQuestionPagesCount();
+      progress.innerHTML = '';
+      for(let i=1;i<=total;i++){
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        if(isResultStep()) bar.classList.add('done');
+        else if(i <= state.step) bar.classList.add('active');
+        progress.appendChild(bar);
+      }
+    }
+
+    function setPreview(id, text){
+      const wrap = document.getElementById(id);
+      const txt = document.getElementById(id + 'Text');
+      if(!wrap || !txt) return;
+      if(cleanText(text)){
+        txt.textContent = text;
+        wrap.classList.remove('hidden');
+        wrap.classList.add('show');
+      } else {
+        wrap.classList.add('hidden');
+        wrap.classList.remove('show');
+        txt.textContent = '';
+      }
+    }
+
+    function enforceSearchLimits(value){
+      const raw = String(value || '').replace(/ё/g,'е').replace(/\s+/g,' ');
+      return raw.trimStart();
+    }
+
+    function normalizeSearchValue(value){
+      return enforceSearchLimits(value).toLowerCase();
+    }
+
+    function tokenizeSearchValue(value){
+      return normalizeSearchValue(value).split(/\s+/).filter(Boolean);
+    }
+
+    const EXTENDED_ENTRY_MAP = Object.fromEntries(EXTENDED_SEARCH_DB.map(entry => [entry.id, entry]));
+
+    function getExtendedEntry(id){
+      return EXTENDED_ENTRY_MAP[id] || null;
+    }
+
+    function getSubOptionsForCurrentMain(){
+      if(state.main_direction && state.main_direction !== '__custom__'){
+        return SUB_DIRECTIONS[state.main_direction] || [];
+      }
+      const entry = getExtendedEntry(state.main_matched_entry_id);
+      if(entry && Array.isArray(entry.chips)){
+        return entry.chips.map((chip, index) => ({
+          id: (entry.id || 'custom') + '_chip_' + index,
+          name: chip,
+          kind: 'chip',
+          parentId: entry.id
+        }));
+      }
+      return [];
+    }
+
+    function getDirectionSuggestionsPool(){
+      return MAIN_DIRECTIONS;
+    }
+
+    function getBestDirectionMatch(query){
+      const list = findSuggestions(query, getDirectionSuggestionsPool(), DIRECTION_ALIASES);
+      return list.length ? list[0] : null;
+    }
+
+    function resolveExtendedEntryByText(value){
+      const q = normalizeSearchValue(value);
+      if(!q) return null;
+      let best = null;
+      let bestScore = -1;
+      EXTENDED_SEARCH_DB.forEach(entry => {
+        const names = [entry.name, ...(entry.aliases || [])].map(v => normalizeSearchValue(v)).filter(Boolean);
+        names.forEach(alias => {
+          let score = -1;
+          if(alias === q) score = 100;
+          else if(alias.startsWith(q)) score = 80;
+          else if(q.startsWith(alias)) score = 75;
+          else if(alias.includes(q) || q.includes(alias)) score = 60;
+          if(score > bestScore){
+            bestScore = score;
+            best = entry;
+          }
+        });
+      });
+      return bestScore >= 60 ? best : null;
+    }
+
+    function getStep2SourceList(){
+      if(state.main_direction && state.main_direction !== '__custom__'){
+        return SUB_DIRECTIONS[state.main_direction] || [];
+      }
+      const rawMain = cleanText(document.getElementById('directionFilter')?.value || state.custom_main_direction || '');
+      const entry = resolveExtendedEntryByText(rawMain);
+      if(!entry) return [];
+      return (entry.chips || []).map((chip, index) => ({
+        id: entry.id + '_chip_' + index,
+        name: chip
+      }));
+    }
+
+    function buildSearchPool(items, aliasMap){
+      return items.map(item => ({
+        id:item.id,
+        name:item.name,
+        kind:item.kind || '',
+        aliases:[item.name, ...((aliasMap && aliasMap[item.id]) || [])],
+        meta:item.kind === 'theme' ? 'тема' : (item.kind === 'direction' ? 'направление' : '')
+      }));
+    }
+
+    function scoreSearchCandidate(query, candidate){
+      if(!query) return -1;
+      const full = normalizeSearchValue(query);
+      const words = tokenizeSearchValue(full);
+      const aliasList = candidate.aliases.map(v => normalizeSearchValue(v)).filter(Boolean);
+      let best = -1;
+      aliasList.forEach(alias => {
+        if(alias === full) best = Math.max(best, 100);
+        if(alias.startsWith(full)) best = Math.max(best, 80);
+        const aliasWords = alias.split(/\s+/).filter(Boolean);
+        const allByWord = words.length && words.every(word => aliasWords.some(part => part.startsWith(word)));
+        if(allByWord) best = Math.max(best, 70);
+        const containsAll = words.length && words.every(word => alias.includes(word));
+        if(containsAll) best = Math.max(best, 50);
+      });
+      return best;
+    }
+
+    function findSuggestions(query, items, aliasMap){
+      const pool = buildSearchPool(items, aliasMap);
+      return pool
+        .map(candidate => ({...candidate, score:scoreSearchCandidate(query, candidate)}))
+        .filter(item => item.score >= 0)
+        .sort((a,b) => b.score - a.score || a.name.localeCompare(b.name, 'ru'))
+        .slice(0, 5);
+    }
+
+    function hideSuggestBox(id){
+      const box = document.getElementById(id);
+      if(!box) return;
+      box.classList.remove('show');
+      box.innerHTML = '';
+      box.dataset.activeIndex = '-1';
+    }
+
+    function renderSuggestBox(id, suggestions, metaLabel, onPick){
+      const box = document.getElementById(id);
+      if(!box) return;
+      box.innerHTML = '';
+      if(!suggestions.length){
+        hideSuggestBox(id);
+        return;
+      }
+      suggestions.forEach((item, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'suggest-item' + (index === 0 ? ' active' : '');
+        btn.dataset.index = String(index);
+        const meta = item.meta ? (metaLabel + ' · ' + item.meta) : metaLabel;
+        btn.innerHTML = `<span class="suggest-title">${item.name}</span><span class="suggest-meta">${meta}</span>`;
+        btn.onclick = () => onPick(item);
+        box.appendChild(btn);
+      });
+      box.dataset.activeIndex = '0';
+      box.classList.add('show');
+    }
+
+    function moveSuggestSelection(id, direction){
+      const box = document.getElementById(id);
+      if(!box || !box.classList.contains('show')) return null;
+      const items = [...box.querySelectorAll('.suggest-item')];
+      if(!items.length) return null;
+      let active = Number(box.dataset.activeIndex || 0);
+      active = Math.max(0, Math.min(items.length - 1, active + direction));
+      items.forEach((node, idx) => node.classList.toggle('active', idx === active));
+      box.dataset.activeIndex = String(active);
+      items[active].scrollIntoView({block:'nearest'});
+      return active;
+    }
+
+    function getActiveSuggestItem(id, suggestions){
+      const box = document.getElementById(id);
+      if(!box || !box.classList.contains('show') || !suggestions.length) return null;
+      const active = Number(box.dataset.activeIndex || 0);
+      return suggestions[Math.max(0, Math.min(suggestions.length - 1, active))] || null;
+    }
+
+    function roleBlock(roleMode){
+      const role = ROLE_LIBRARY[roleMode];
+      if(role){
+        return [`Ты — ${role.title}.`, '', 'Принципы работы:', ...role.behavior.map(i=>`— ${i}`)].join('\n');
+      }
+      return [`Ты — ${cleanText(roleMode || 'практичный помощник')}.`, '', 'Принципы работы:', '— удерживай контекст задачи', '— отвечай по существу', '— не теряй смысл пользовательских формулировок'].join('\n');
+    }
+    function contextBlock(s){
+      return ['Контекст:', `— направление: ${getMainName(s.main_direction)}`, `— специализация: ${getSubName(s.main_direction, s.sub_direction)}`, `— роль ИИ: ${getRoleName(s.role_mode)}`, `— mode: ${MODE_MAP[s.mode].label}`].join('\n');
+    }
+    function taskBlock(s){ return ['Задача:', cleanText(s.task_text || 'Задача не указана.')].join('\n'); }
+    function humanizeClarificationKey(k){
+      const map = {clarify_output_style:'стиль ответа',clarify_explanation:'режим объяснения',clarify_tone:'тон общения',clarify_code_level:'уровень кода',clarify_format:'формат результата'};
+      return map[k] || k;
+    }
+    function clarificationBlock(clarifications = {}){
+      const rows = Object.entries(clarifications).filter(([,v])=>cleanText(v)).map(([k,v])=>`— ${humanizeClarificationKey(k)}: ${cleanText(v)}`);
+      return rows.length ? ['Уточнения:', ...rows].join('\n') : '';
+    }
+    function modeExtraBlock(s){
+      const rows = [];
+      if(s.mode === 'pedant'){
+        if(cleanText(s.pedant_context)) rows.push(`— контекст: ${cleanText(s.pedant_context)}`);
+        if(cleanText(s.pedant_result)) rows.push(`— результат: ${cleanText(s.pedant_result)}`);
+        if(cleanText(s.pedant_extra)) rows.push(`— уточнение: ${cleanText(s.pedant_extra)}`);
+      }
+      if(s.mode === 'nightmare'){
+        if(cleanText(s.night_context)) rows.push(`— контекст: ${cleanText(s.night_context)}`);
+        if(cleanText(s.night_format)) rows.push(`— формат и структура: ${cleanText(s.night_format)}`);
+        if(cleanText(s.night_exclude)) rows.push(`— исключения: ${cleanText(s.night_exclude)}`);
+        if(cleanText(s.night_result)) rows.push(`— результат: ${cleanText(s.night_result)}`);
+        if(cleanText(s.night_example)) rows.push(`— пример: ${cleanText(s.night_example)}`);
+      }
+      return rows.length ? ['Дополнительные вопросы mode:', ...rows].join('\n') : '';
+    }
+    function outputBlock(s, clarifications = {}){
+      const role = ROLE_LIBRARY[s.role_mode] || ROLE_LIBRARY.builder;
+      const lines = [...role.output];
+      const answerStyle = cleanText(clarifications.clarify_output_style || '');
+      if(answerStyle==='кратко'){ lines.length=0; lines.push('дай краткий ответ','без лишних пояснений'); }
+      else if(answerStyle==='подробно'){ lines.length=0; lines.push('дай подробный, но структурированный ответ','не растекайся по теме'); }
+      const explanation = cleanText(clarifications.clarify_explanation || '');
+      if(explanation==='по шагам') lines.push('объясняй по шагам');
+      else if(explanation==='сразу решение') lines.push('сначала дай решение, потом минимум объяснений');
+      const codeLevel = cleanText(clarifications.clarify_code_level || '');
+      if(codeLevel) lines.push(`ориентируй сложность на уровень: ${codeLevel}`);
+      const tone = cleanText(clarifications.clarify_tone || '');
+      if(tone) lines.push(`стиль общения: ${tone}`);
+      const format = cleanText(clarifications.clarify_format || '');
+      if(format) lines.push(`формат результата: ${format}`);
+      return ['Формат ответа:', ...lines.map(i=>`— ${i}`)].join('\n');
+    }
+
+    function validateState(s){
+      const warnings = [];
+      if(!cleanText(s.main_direction)) warnings.push('Не выбрано основное направление.');
+      if(!cleanText(s.sub_direction)) warnings.push('Не выбрана специализация.');
+      if(!cleanText(s.role_mode)) warnings.push('Не выбрана роль ИИ.');
+      if(!cleanText(s.task_text)) warnings.push('Не заполнен текст задачи.');
+      if(s.mode === 'pedant'){
+        if(!cleanText(s.pedant_context)) warnings.push('Не заполнен контекст Pedant.');
+        if(!cleanText(s.pedant_result)) warnings.push('Не заполнен результат Pedant.');
+        if(!cleanText(s.pedant_extra)) warnings.push('Не заполнено уточнение Pedant.');
+      }
+      if(s.mode === 'nightmare'){
+        if(!cleanText(s.night_context)) warnings.push('Не заполнен контекст Nightmare.');
+        if(!cleanText(s.night_format)) warnings.push('Не заполнен формат Nightmare.');
+        if(!cleanText(s.night_exclude)) warnings.push('Не заполнены исключения Nightmare.');
+        if(!cleanText(s.night_result)) warnings.push('Не заполнен результат Nightmare.');
+        if(!cleanText(s.night_example)) warnings.push('Не заполнен пример Nightmare.');
+      }
+      return warnings;
+    }
+
+    function assemblePrompt(s){
+      const warnings = validateState(s);
+      if(warnings.length) return {ok:false,prompt:'',warnings,meta:{engine_version:'1.1.0',reason:'VALIDATION_FAILED'}};
+      const parts = [roleBlock(s.role_mode), contextBlock(s), taskBlock(s)];
+      const clar = clarificationBlock(s.clarifications || {}); if(clar) parts.push(clar);
+      const extra = modeExtraBlock(s); if(extra) parts.push(extra);
+      parts.push(outputBlock(s, s.clarifications || {}));
+      return {ok:true,prompt:parts.join('\n\n'),warnings,meta:{engine_version:'1.1.0',deterministic:true,mode:s.mode}};
+    }
+
+    function showToast(text){
+      const toast = document.getElementById('toast');
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove('show'), 1400);
+    }
+
+    function getStepHint(step){
+      if(step===1) return 'Сначала выбери направление';
+      if(step===2) return 'Теперь выбери специализацию';
+      if(step===3) return 'Выбери режим ИИ';
+      if(step===4) return 'Опиши задачу';
+      if(step===5 && state.mode==='pedant') return 'Заполни вопросы Pedant';
+      if(step===5 && state.mode==='nightmare') return 'Заполни вопросы Nightmare';
+      if(step===6) return 'Дополни режим Nightmare';
+      return 'Промт собран';
+    }
+
+    function updateStepSummaries(){
+      document.getElementById('summaryStep2').textContent = state.main_direction ? `Направление: ${getMainName(state.main_direction)}` : 'Сначала выбери направление.';
+      document.getElementById('summaryStep3').textContent = state.main_direction && state.sub_direction ? `${getMainName(state.main_direction)} → ${getSubName(state.main_direction, state.sub_direction)}` : 'Сначала выбери направление и специализацию.';
+      document.getElementById('summaryStep4').textContent = state.role_mode ? `${getMainName(state.main_direction)} → ${getSubName(state.main_direction, state.sub_direction)} · роль: ${getRoleName(state.role_mode)}` : 'Сначала выбери роль ИИ.';
+      const base = `${MODE_MAP[state.mode].label} · ${getMainName(state.main_direction)} → ${getSubName(state.main_direction, state.sub_direction)} · ${getRoleName(state.role_mode)}`;
+      document.getElementById('summaryStep5').textContent = base;
+      document.getElementById('summaryStep6').textContent = base;
+      document.getElementById('summaryStep7').textContent = base;
+      document.getElementById('badge1').textContent = `Шаг 1 / ${getQuestionPagesCount()}`;
+      document.getElementById('badge2').textContent = `Шаг 2 / ${getQuestionPagesCount()}`;
+      document.getElementById('badge3').textContent = `Шаг 3 / ${getQuestionPagesCount()}`;
+      document.getElementById('badge4').textContent = `Шаг 4 / ${getQuestionPagesCount()}`;
+      document.getElementById('badge5').textContent = `Шаг 5 / ${getQuestionPagesCount()}`;
+      document.getElementById('badge6').textContent = `Шаг 6 / ${getQuestionPagesCount()}`;
+    }
+
+    function updateModeUi(){
+      document.getElementById('modeSelect').value = state.mode;
+      document.getElementById('screen5').classList.toggle('hidden', state.mode === 'light');
+      document.getElementById('screen6').classList.toggle('hidden', state.mode !== 'nightmare');
+      document.getElementById('pedantQuestionsCard').classList.toggle('hidden', state.mode !== 'pedant');
+      document.getElementById('nightmareQuestionsCardA').classList.toggle('hidden', state.mode !== 'nightmare');
+      document.getElementById('modeExtraTitle5').textContent = state.mode === 'pedant' ? 'Вопросы режима Pedant' : 'Вопросы режима Nightmare';
+    }
+
+    function renderProgressAndVisibility(){
+      buildProgress();
+      Object.values(screens).forEach(sc => sc.classList.remove('active'));
+      screens[state.step].classList.add('active');
+      resultActions.classList.toggle('hidden', !isResultStep());
+      saveActions.classList.toggle('hidden', !isResultStep());
+      copyTopBtn.classList.toggle('hidden', !isResultStep());
+      backBtn.classList.toggle('hidden', state.step === 1);
+      stepHint.textContent = getStepHint(state.step);
+      if(isResultStep()) mainBtn.textContent = 'Копировать результат';
+      else if(state.step === getLastQuestionStep()) mainBtn.textContent = 'Собрать промт';
+      else mainBtn.textContent = 'Дальше';
+    }
+
+    function showStep(step){
+      state.step = step;
+      updateModeUi();
+      updateStepSummaries();
+      renderProgressAndVisibility();
+      saveDraft();
+    }
+
+    let directionSuggestions = [];
+    let subDirectionSuggestions = [];
+    let directionAiTimer = null;
+    let subDirectionAiTimer = null;
+    let directionAiRequestId = 0;
+    let subDirectionAiRequestId = 0;
+    const SEARCH_AI_API_URL = 'http://94.125.101.253:3000/api/ai';
+    const SEARCH_AI_MODEL = 'deepseek-chat';
+
+    function buildAiSystemPrompt(kind, options, mainLabel){
+      if(kind === 'direction'){
+        if(options && options.length){
+          return [
+            'Ты выбираешь направления или темы для UI-конфигуратора.',
+            'Нужно вернуть только JSON-массив строк.',
+            'Можно выбирать только из списка разрешённых вариантов.',
+            'Максимум 5 вариантов.',
+            'Без пояснений, без markdown.'
+          ].join(' ');
+        }
+        return [
+          'Ты помогаешь определить тему или направление для UI-конфигуратора.',
+          'Нужно вернуть только JSON-массив из 3-5 коротких вариантов.',
+          'Формулировки должны быть короткими и понятными пользователю.',
+          'Без пояснений, без markdown.'
+        ].join(' ');
+      }
+      if(options && options.length){
+        return [
+          'Ты выбираешь специализации для UI-конфигуратора.',
+          'Нужно вернуть только JSON-массив строк.',
+          'Сначала предпочитай варианты из разрешённого списка специализаций.',
+          'Если точного варианта нет, можно предложить до 2 коротких пользовательских специализаций.',
+          'Максимум 5 вариантов.',
+          'Контекст направления: ' + (mainLabel || 'не указан') + '.',
+          'Без пояснений, без markdown.'
+        ].join(' ');
+      }
+      return [
+        'Ты придумываешь 5 коротких специализаций для второго шага UI-конфигуратора.',
+        'Нужно вернуть только JSON-массив строк длиной 5.',
+        'Каждая строка должна быть короткой, как чипс интерфейса.',
+        'Контекст направления или темы: ' + (mainLabel || 'не указан') + '.',
+        'Без пояснений, без markdown.'
+      ].join(' ');
+    }
+
+    function safeJsonArrayFromText(text){
+      const raw = String(text || '').trim();
+      if(!raw) return [];
+      try{
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch(e){
+        const match = raw.match(/\[[\s\S]*\]/);
+        if(!match) return [];
+        try{
+          const parsed = JSON.parse(match[0]);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch(err){
+          return [];
+        }
+      }
+    }
+
+    async function requestAiSuggestions(kind, query, options, mainLabel){
+      const optionNames = (options || []).map(item => item.name);
+      const userPrompt = kind === 'direction'
+        ? (
+            optionNames.length
+              ? [
+                  'Запрос пользователя: ' + query,
+                  'Разрешённые варианты: ' + optionNames.join(', '),
+                  'Верни JSON-массив из наиболее подходящих вариантов.'
+                ].join('\n')
+              : [
+                  'Запрос пользователя: ' + query,
+                  'Верни JSON-массив из 3-5 коротких направлений, тем или вариантов.'
+                ].join('\n')
+          )
+        : (
+            optionNames.length
+              ? [
+                  'Запрос пользователя: ' + query,
+                  'Текущее направление или тема: ' + (mainLabel || 'не указано'),
+                  'Разрешённые специализации: ' + optionNames.join(', '),
+                  'Верни JSON-массив из наиболее подходящих специализаций.'
+                ].join('\n')
+              : [
+                  'Запрос пользователя: ' + (query || mainLabel || ''),
+                  'Контекст направления или темы: ' + (mainLabel || 'не указан'),
+                  'Верни JSON-массив из 5 коротких специализаций для второго шага.'
+                ].join('\n')
+          );
+
+      const res = await fetch(SEARCH_AI_API_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          model: SEARCH_AI_MODEL,
+          temperature: 0.15,
+          max_tokens: 140,
+          messages: [
+            { role:'system', content: buildAiSystemPrompt(kind, options, mainLabel) },
+            { role:'user', content: userPrompt }
+          ]
+        })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data?.error?.message || data?.message || 'AI search error');
+      const content = data?.choices?.[0]?.message?.content || '';
+      return safeJsonArrayFromText(content)
+        .map(v => cleanText(v))
+        .filter(Boolean)
+        .slice(0, 5);
+    }
+
+    function enrichAiSuggestions(kind, names, options){
+      const byName = new Map((options || []).map(item => [normalizeSearchValue(item.name), item]));
+      const result = [];
+      names.forEach(name => {
+        const normalized = normalizeSearchValue(name);
+        const found = byName.get(normalized);
+        if(found){
+          result.push({ id: found.id, name: found.name, score: 40, meta:'ai', kind: found.kind || '' });
+        } else {
+          result.push({ id: '__custom__', name, score: 35, meta:'ai', kind: kind === 'direction' ? 'theme' : 'chip' });
+        }
+      });
+      const uniq = [];
+      const seen = new Set();
+      result.forEach(item => {
+        const key = normalizeSearchValue(item.name);
+        if(seen.has(key)) return;
+        seen.add(key);
+        uniq.push(item);
+      });
+      return uniq;
+    }
+
+    function mergeSuggestionLists(primary, secondary){
+      const out = [];
+      const seen = new Set();
+      [...primary, ...secondary].forEach(item => {
+        const key = normalizeSearchValue(item.name || item.id || '');
+        if(!key || seen.has(key)) return;
+        seen.add(key);
+        out.push(item);
+      });
+      return out.slice(0, 5);
+    }
+
+    function scheduleAiSuggestions(kind){
+      const isDirection = kind === 'direction';
+      const input = document.getElementById(isDirection ? 'directionFilter' : 'subDirectionFilter');
+      const query = normalizeSearchValue(input.value);
+      const suggestId = isDirection ? 'directionSuggest' : 'subDirectionSuggest';
+      const options = isDirection ? getDirectionSuggestionsPool() : getSubOptionsForCurrentMain();
+      const local = isDirection ? directionSuggestions : subDirectionSuggestions;
+      const hasStrongLocal = local.some(item => (item.score || 0) >= 80);
+      if(isDirection ? directionAiTimer : subDirectionAiTimer){
+        clearTimeout(isDirection ? directionAiTimer : subDirectionAiTimer);
+      }
+      if(!query || query.length < 2 || hasStrongLocal) return;
+      const requestId = isDirection ? ++directionAiRequestId : ++subDirectionAiRequestId;
+      const timer = setTimeout(async () => {
+        try{
+          const names = await requestAiSuggestions(
+            isDirection ? 'direction' : 'subdirection',
+            query,
+            options,
+            isDirection ? '' : (state.custom_main_direction || getMainName(state.main_direction))
+          );
+          if((isDirection ? directionAiRequestId : subDirectionAiRequestId) !== requestId) return;
+          const aiItems = enrichAiSuggestions(isDirection ? 'direction' : 'subdirection', names, options);
+          const merged = mergeSuggestionLists(isDirection ? directionSuggestions : subDirectionSuggestions, aiItems);
+          if(isDirection) directionSuggestions = merged; else subDirectionSuggestions = merged;
+          if(merged.length){
+            renderSuggestBox(
+              suggestId,
+              merged,
+              isDirection ? 'направление' : 'специализация',
+              (item) => isDirection ? pickMainDirection(item, true) : pickSubDirection(item, true)
+            );
+          }
+        } catch(e){
+          // no-op
+        }
+      }, 450);
+      if(isDirection) directionAiTimer = timer; else subDirectionAiTimer = timer;
+    }
+
+    function pickMainDirection(item, updateInput = true){
+      state.sub_direction = '';
+      state.custom_sub_direction = '';
+      state.main_matched_entry_id = item.id && item.id !== '__custom__' ? item.id : '';
+      state.main_matched_entry_kind = item.kind || '';
+      if(item.kind === 'theme'){
+        state.main_direction = '__custom__';
+        state.custom_main_direction = item.name;
+      } else if(item.id === '__custom__'){
+        state.main_direction = '__custom__';
+        state.custom_main_direction = item.name;
+      } else {
+        state.main_direction = item.id;
+        state.custom_main_direction = '';
+      }
+      if(updateInput) document.getElementById('directionFilter').value = item.name;
+      hideSuggestBox('directionSuggest');
+      renderMainDirections();
+      renderSubDirections();
+      updateStepSummaries();
+      setPreview('directionPreview', '');
+      saveDraft();
+    }
+
+    function renderMainDirections(){
+      const input = document.getElementById('directionFilter');
+      const q = normalizeSearchValue(input.value);
+      const box = document.getElementById('mainDirections');
+      const card = document.getElementById('mainDirectionsCard');
+      box.innerHTML = '';
+
+      const topItems = MAIN_DIRECTIONS.slice(0, 10);
+      const suggestions = q ? findSuggestions(q, getDirectionSuggestionsPool(), DIRECTION_ALIASES) : [];
+      directionSuggestions = suggestions;
+
+      if(q){
+        if(card) card.style.display = 'none';
+        if(suggestions.length){
+          renderSuggestBox('directionSuggest', suggestions, 'направление', (item) => pickMainDirection(item, true));
+        } else {
+          hideSuggestBox('directionSuggest');
+        }
+        scheduleAiSuggestions('direction');
+        return;
+      }
+
+      if(card) card.style.display = '';
+      topItems.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option' + (state.main_direction === item.id ? ' active' : '');
+        btn.textContent = item.name;
+        btn.onclick = () => pickMainDirection(item, true);
+        box.appendChild(btn);
+      });
+      hideSuggestBox('directionSuggest');
+    }
+
+    function pickSubDirection(item, updateInput = true){
+      state.custom_sub_direction = '';
+      state.sub_direction = item.id === '__custom__' ? '__custom__' : item.id;
+      if(item.id === '__custom__') state.custom_sub_direction = item.name;
+      if(updateInput) document.getElementById('subDirectionFilter').value = item.name;
+      hideSuggestBox('subDirectionSuggest');
+      renderSubDirections();
+      renderClarifications();
+      updateStepSummaries();
+      setPreview('subDirectionPreview', '');
+      saveDraft();
+    }
+
+    function renderSubDirections(){
+      const input = document.getElementById('subDirectionFilter');
+      const q = normalizeSearchValue(input.value);
+      const box = document.getElementById('subDirections');
+      const card = document.getElementById('subDirectionsCard');
+      box.innerHTML = '';
+
+      const list = getSubOptionsForCurrentMain();
+      const suggestions = q ? findSuggestions(q, list, SUB_DIRECTION_ALIASES) : [];
+      subDirectionSuggestions = suggestions;
+
+      if(q){
+        if(card) card.style.display = 'none';
+        if(suggestions.length){
+          renderSuggestBox('subDirectionSuggest', suggestions, 'специализация', (item) => pickSubDirection(item, true));
+        } else {
+          hideSuggestBox('subDirectionSuggest');
+        }
+        scheduleAiSuggestions('subdirection');
+        return;
+      }
+
+      if(card) card.style.display = '';
+      list.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option' + (state.sub_direction === item.id ? ' active' : '');
+        btn.textContent = item.name;
+        btn.onclick = () => pickSubDirection(item, true);
+        box.appendChild(btn);
+      });
+      if(!list.length){
+        box.innerHTML = '<div class="summary-text">Напиши специализацию или выбери из подсказок.</div>';
+      }
+      hideSuggestBox('subDirectionSuggest');
+    }
+
+    function renderRoles(){
+      const q = cleanText(document.getElementById('roleFilter').value).toLowerCase();
+      const box = document.getElementById('rolesBox');
+      box.innerHTML = '';
+      ROLES.filter(role => !q || role.name.toLowerCase().includes(q) || role.description.toLowerCase().includes(q)).forEach(role => {
+        const div = document.createElement('div');
+        div.className = 'role-card' + (state.role_mode === role.id ? ' selected' : '');
+        div.innerHTML = `<div class="mode-line"><div><div class="mode-name">${role.name}</div><div class="mode-short">${role.description}</div></div><div class="mode-right"><div class="mode-tag">${role.tag}</div><button class="info-btn" type="button" data-role="${role.id}">i</button></div></div>`;
+        div.onclick = (e) => { if(e.target.closest('.info-btn')) return; state.role_mode = role.id; renderRoles(); renderClarifications(); updateStepSummaries(); setPreview('rolePreview', role.name + ' — ' + role.preview.join(', ')); saveDraft(); };
+        box.appendChild(div);
+      });
+      box.querySelectorAll('.info-btn').forEach(btn => btn.onclick = (e) => {
+        e.stopPropagation();
+        const role = ROLES.find(x => x.id === btn.dataset.role);
+        document.getElementById('infoTitle').textContent = role.name;
+        document.getElementById('infoText').textContent = 'Как он будет отвечать:\n\n' + role.preview.map(v => '— ' + v).join('\n');
+        document.getElementById('infoModal').classList.add('show');
+      });
+      setPreview('rolePreview', state.role_mode ? getRoleName(state.role_mode) : '');
+      if(!box.children.length) box.innerHTML = '<div class="summary-text">Ничего не найдено.</div>';
+    }
+
+    function getActiveClarificationRules(){
+      const all = CLARIFICATION_RULES.rules || [];
+      const matched = all.filter(rule => {
+        const t = rule.trigger || {};
+        let ok = true;
+        if(t.role_mode) ok = ok && t.role_mode.includes(state.role_mode);
+        if(t.main_direction) ok = ok && t.main_direction.includes(state.main_direction);
+        if(t.sub_direction) ok = ok && t.sub_direction.includes(state.sub_direction);
+        return ok;
+      });
+      matched.sort((a,b)=>(a.priority||99)-(b.priority||99));
+      return matched.slice(0, CLARIFICATION_RULES.logic.max_questions || 2);
+    }
+
+
+    function collectConfigSnapshot(){
+      return {
+        mode: state.mode,
+        main_direction: state.main_direction,
+        sub_direction: state.sub_direction,
+        role_mode: state.role_mode,
+        task_text: document.getElementById('taskText').value.trim(),
+        clarify_output_style: state.clarifications?.clarify_output_style || '',
+        clarify_explanation: state.clarifications?.clarify_explanation || '',
+        clarify_tone: state.clarifications?.clarify_tone || '',
+        clarify_code_level: state.clarifications?.clarify_code_level || '',
+        clarify_format: state.clarifications?.clarify_format || '',
+        pedant_context: document.getElementById('contextText').value.trim(),
+        pedant_result: document.getElementById('resultTextInput').value.trim(),
+        pedant_clarify: document.getElementById('modeClarifyText').value.trim(),
+        night_context: document.getElementById('nightContextText').value.trim(),
+        night_format: document.getElementById('formatText').value.trim(),
+        night_exclude: document.getElementById('excludeText').value.trim(),
+        night_result: document.getElementById('nightResultText').value.trim(),
+        night_example: document.getElementById('exampleText').value.trim()
+      };
+    }
+
+    function buildAiVersionPrompt(basePrompt){
+      const s = collectConfigSnapshot();
+      const roleName = ROLES.find(x => x.id === s.role_mode)?.name || s.role_mode || 'не указано';
+      const mainName = getMainName(s.main_direction || '');
+      const subName = getSubName(s.main_direction || '', s.sub_direction || '');
+      const modeName = MODE_MAP[s.mode]?.label || s.mode || 'light';
+      const extra = [];
+      if (s.pedant_context) extra.push(`Контекст пользователя: ${s.pedant_context}`);
+      if (s.pedant_result) extra.push(`Желаемый результат: ${s.pedant_result}`);
+      if (s.pedant_clarify) extra.push(`Дополнительное уточнение: ${s.pedant_clarify}`);
+      if (s.night_context) extra.push(`Контекст пользователя: ${s.night_context}`);
+      if (s.night_format) extra.push(`Желаемый формат и структура: ${s.night_format}`);
+      if (s.night_exclude) extra.push(`Что исключить: ${s.night_exclude}`);
+      if (s.night_result) extra.push(`Желаемый результат: ${s.night_result}`);
+      if (s.night_example) extra.push(`Пример ориентира: ${s.night_example}`);
+
+      return [
+        'Ниже конфигурация из ПРОМТМЕЙСТЕРА и уже собранный детерминированный промт.',
+        'Твоя задача — быстро понять ядро задачи и пересобрать это в сильно улучшенный финальный промт для внешней LLM.',
+        '',
+        'Приоритет понимания:',
+        '1. Основная задача пользователя',
+        '2. Направление',
+        '3. Специализация',
+        '4. Остальные уточнения и режим',
+        '',
+        'Если вход местами неровный, шумный или противоречивый — не тупи и не спорь.',
+        'Вытащи наиболее сложную, полезную и прикладную часть задачи и собери вокруг неё сильный рабочий промт.',
+        'Если рядом есть слабая или бытовая фраза, а ядро задачи профессиональное — опирайся на профессиональное ядро.',
+        '',
+        'Что нужно сделать:',
+        '— пересобрать промт по логике RCCF: Role, Context, Constraints, Format',
+        '— самому выбрать лучший формат результата под смысл задачи',
+        '— если задача не требует кода, таблиц или JSON — не навязывай их',
+        '— если задача требует структуры — дай её',
+        '— если задача требует пошаговости — дай её',
+        '— сделай промт кратким, но полноценным и сильным',
+        '— в конце промта добавь блок «Ожидаемый результат» с коротким примером',
+        '— после этого добавь блок «Варианты усиления» с 3 короткими вариантами, как можно улучшить следующий запрос или скорректировать итог',
+        '',
+        'Стиль самого промта:',
+        '— строгий',
+        '— точный',
+        '— без воды',
+        '— инженерный',
+        '— честный',
+        '— с ловким умным мышлением, если вход кривой или уходит в сторону',
+        '',
+        'Выдай только готовый финальный промт. Без вступлений и без объяснений.',
+        '',
+        `Mode: ${modeName}`,
+        `Направление: ${mainName || 'не указано'}`,
+        `Специализация: ${subName || 'не указано'}`,
+        `Роль ИИ: ${roleName}`,
+        `Основная задача пользователя: ${s.task_text || 'не указана'}`,
+        ...extra,
+        s.clarify_output_style ? `Стиль ответа: ${s.clarify_output_style}` : '',
+        s.clarify_explanation ? `Режим объяснения: ${s.clarify_explanation}` : '',
+        s.clarify_tone ? `Тон общения: ${s.clarify_tone}` : '',
+        s.clarify_code_level ? `Уровень кода: ${s.clarify_code_level}` : '',
+        s.clarify_format ? `Формат результата: ${s.clarify_format}` : '',
+        '',
+        'Детерминированный промт из фронта:',
+        basePrompt || '(пусто)'
+      ].filter(Boolean).join('\\n');
+    }
+
+    async function generateAiVersion(){
+      const aiStatus = document.getElementById('aiVersionStatus');
+      syncModeFields();
+      const deterministic = assemblePrompt(state);
+      if(!deterministic.ok){
+        if(aiStatus) aiStatus.textContent = 'Сначала собери обычный промт без ошибок.';
+        if(aiVersionText) aiVersionText.value = '';
+        return;
+      }
+
+      if(aiStatus) aiStatus.textContent = 'DeepSeek думает над улучшенной AI-версией...';
+      if(aiVersionText) aiVersionText.value = '';
+
+      try {
+        const response = await fetch('https://api.deepseek.com/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
+          },
+          body: JSON.stringify({
+            model: DEEPSEEK_MODEL,
+            temperature: 0.4,
+            messages: [
+              {
+                role: 'system',
+                content: 'Ты встроенный AI Prompt Refiner внутри продукта ПРОМТМЕЙСТЕР. Ты строгий, краткий, честный, инженерный. Твоя задача — превращать сырой или средний промт в сильный рабочий промт почти без воды. Ты умеешь удерживать ядро задачи даже если вход неровный.'
+              },
+              {
+                role: 'user',
+                content: buildAiVersionPrompt(deterministic.prompt)
+              }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        if(!response.ok){
+          throw new Error(data?.error?.message || data?.message || ('Ошибка API: ' + response.status));
+        }
+
+        const answer = data?.choices?.[0]?.message?.content?.trim() || 'Пустой ответ от модели.';
+        if(aiVersionText) aiVersionText.value = answer;
+        if(aiStatus) aiStatus.textContent = 'AI версия готова.';
+      } catch (error) {
+        if(aiVersionText) aiVersionText.value = '';
+        if(aiStatus) aiStatus.textContent = 'Ошибка AI версии: ' + (error?.message || String(error));
+      }
+    }
+
+
+
+    function appendToFieldValue(currentValue, addition){
+      const base = cleanText(currentValue || '');
+      const extra = cleanText(addition || '');
+      if(!extra) return base;
+      if(!base) return extra;
+      if(base.toLowerCase().includes(extra.toLowerCase())) return base;
+      const glue = /[.!?;:]$/.test(base) ? ' ' : '; ';
+      return base + glue + extra;
+    }
+
+    function appendToInput(inputEl, addition){
+      if(!inputEl) return;
+      inputEl.value = appendToFieldValue(inputEl.value, addition);
+      inputEl.dispatchEvent(new Event('input', { bubbles:true }));
+    }
+
+    function renderEditAiRoleList(){
+      const q = cleanText(document.getElementById('editAiRoleFilter')?.value).toLowerCase();
+      const box = document.getElementById('editAiRoleList');
+      if(!box) return;
+      box.innerHTML = '';
+      ROLES.filter(role => !q || role.name.toLowerCase().includes(q) || role.description.toLowerCase().includes(q) || role.preview.join(' ').toLowerCase().includes(q)).forEach(role => {
+        const div = document.createElement('div');
+        div.className = 'role-card';
+        div.innerHTML = `<div class="mode-line"><div><div class="mode-name">${role.name}</div><div class="mode-short">${role.description}</div></div><div class="mode-right"><div class="mode-tag">${role.tag}</div></div></div>`;
+        div.onclick = () => {
+          appendToInput(document.getElementById('editAiInput'), `Перестрой под роль: ${role.name}. ${role.description}`);
+        };
+        box.appendChild(div);
+      });
+      if(!box.children.length){
+        box.innerHTML = '<div class="summary-text">Ничего не найдено.</div>';
+      }
+    }
+
+    function switchVersionTab(mode){
+      const showAi = mode === 'ai';
+      if(userVersionText) userVersionText.classList.toggle('hidden', showAi);
+      if(aiVersionText) aiVersionText.classList.toggle('hidden', !showAi);
+      if(userVersionTab) userVersionTab.classList.toggle('active', !showAi);
+      if(aiVersionTab) aiVersionTab.classList.toggle('active', showAi);
+    }
+
+    async function applyAiEdit(){
+      const editInput = document.getElementById('editAiInput');
+      const aiStatus = document.getElementById('aiVersionStatus');
+      const currentAi = aiVersionText?.value?.trim() || '';
+      const userBase = userVersionText?.value?.trim() || '';
+      const instruction = editInput?.value?.trim() || '';
+      if(!instruction){
+        if(aiStatus) aiStatus.textContent = 'Сначала напиши, что именно изменить.';
+        return;
+      }
+
+      if(aiStatus) aiStatus.textContent = 'DeepSeek перестраивает AI-версию...';
+
+      try{
+        const response = await fetch('https://api.deepseek.com/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
+          },
+          body: JSON.stringify({
+            model: DEEPSEEK_MODEL,
+            temperature: 0.35,
+            messages: [
+              {
+                role: 'system',
+                content: 'Ты встроенный AI Prompt Refiner внутри ПРОМТМЕЙСТЕРА. Тебе дают пользовательскую версию, текущую AI-версию и команду на изменение. Пересобери только финальный улучшенный промт. Будь кратким, точным, инженерным. Сохраняй ядро задачи. Если просят перестроить полностью — перестрой.'
+              },
+              {
+                role: 'user',
+                content: [
+                  'Пользовательская версия:',
+                  userBase || '(пусто)',
+                  '',
+                  'Текущая AI версия:',
+                  currentAi || '(пусто)',
+                  '',
+                  'Что изменить:',
+                  instruction,
+                  '',
+                  'Верни только новую финальную AI-версию промта. Без пояснений.'
+                ].join('\n')
+              }
+            ]
+          })
+        });
+        const data = await response.json();
+        if(!response.ok){
+          throw new Error(data?.error?.message || data?.message || ('Ошибка API: ' + response.status));
+        }
+        const answer = data?.choices?.[0]?.message?.content?.trim() || 'Пустой ответ от модели.';
+        if(aiVersionText) aiVersionText.value = answer;
+        if(aiStatus) aiStatus.textContent = 'AI версия обновлена по твоей правке.';
+        switchVersionTab('ai');
+        document.getElementById('editAiModal').classList.remove('show');
+        if(editInput) editInput.value = '';
+      } catch(error){
+        if(aiStatus) aiStatus.textContent = 'Ошибка правки AI версии: ' + (error?.message || String(error));
+      }
+    }
+
+    function renderClarifications(){
+      const box = document.getElementById('clarificationsBox');
+      box.innerHTML = '';
+      const rules = getActiveClarificationRules();
+      if(!rules.length){ box.innerHTML = '<div class="summary-text">Для текущей комбинации дополнительных уточнений не нужно.</div>'; return; }
+      rules.forEach(rule => {
+        const wrap = document.createElement('div'); wrap.className = 'clarify-item';
+        wrap.innerHTML = `<div class="question">${rule.question}</div>`;
+        const opts = document.createElement('div'); opts.className = 'chips';
+        (rule.options || []).forEach(opt => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'chip' + (state.clarifications[rule.id] === opt ? ' active' : '');
+          btn.textContent = opt;
+          btn.onclick = () => { state.clarifications[rule.id] = opt; renderClarifications(); saveDraft(); };
+          opts.appendChild(btn);
+        });
+        wrap.appendChild(opts); box.appendChild(wrap);
+      });
+    }
+
+    function validateCurrentStep(){
+      if(state.step===1 && !state.main_direction) return 'Сначала выбери направление.';
+      if(state.step===2 && !state.sub_direction) return 'Сначала выбери специализацию.';
+      if(state.step===3 && !state.role_mode) return 'Сначала выбери роль ИИ.';
+      if(state.step===4 && !cleanText(document.getElementById('taskText').value)) return 'Сначала опиши задачу.';
+      if(state.step===5 && state.mode==='pedant'){
+        if(!cleanText(document.getElementById('contextText').value)) return 'Заполни контекст.';
+        if(!cleanText(document.getElementById('resultTextInput').value)) return 'Заполни результат.';
+        if(!cleanText(document.getElementById('modeClarifyText').value)) return 'Заполни уточнение.';
+      }
+      if(state.step===5 && state.mode==='nightmare'){
+        if(!cleanText(document.getElementById('nightContextText').value)) return 'Заполни контекст.';
+        if(!cleanText(document.getElementById('formatText').value)) return 'Заполни формат и структуру ответа.';
+        if(!cleanText(document.getElementById('excludeText').value)) return 'Заполни исключения.';
+      }
+      if(state.step===6 && state.mode==='nightmare'){
+        if(!cleanText(document.getElementById('nightResultText').value)) return 'Заполни результат.';
+        if(!cleanText(document.getElementById('exampleText').value)) return 'Заполни пример.';
+      }
+      return '';
+    }
+
+    function applyManualSelections(){
+      const directionInput = cleanText(document.getElementById('directionFilter')?.value);
+      const subDirectionInput = cleanText(document.getElementById('subDirectionFilter')?.value);
+      const roleInput = cleanText(document.getElementById('roleFilter')?.value);
+
+      if(state.step===1 && directionInput){
+        const best = getBestDirectionMatch(directionInput);
+        const exactDirection = MAIN_DIRECTIONS.find(item => item.kind !== 'theme' && normalizeSearchValue(item.name) === normalizeSearchValue(directionInput));
+        if(exactDirection){
+          state.main_direction = exactDirection.id;
+          state.custom_main_direction = '';
+          state.main_matched_entry_id = exactDirection.id;
+          state.main_matched_entry_kind = exactDirection.kind || 'direction';
+        } else {
+          state.main_direction = '__custom__';
+          state.custom_main_direction = directionInput;
+          state.main_matched_entry_id = best && (best.score || 0) >= 70 ? best.id : '';
+          state.main_matched_entry_kind = best && (best.score || 0) >= 70 ? (best.kind || '') : '';
+        }
+        state.sub_direction = '';
+        state.custom_sub_direction = '';
+        setPreview('directionPreview', '');
+      }
+      if(state.step===2 && subDirectionInput){
+        const list = getSubOptionsForCurrentMain();
+        const exactSub = list.find(item => normalizeSearchValue(item.name) === normalizeSearchValue(subDirectionInput));
+        if(exactSub){
+          state.sub_direction = exactSub.id;
+          state.custom_sub_direction = '';
+        } else {
+          state.sub_direction = '__custom__';
+          state.custom_sub_direction = subDirectionInput;
+        }
+        setPreview('subDirectionPreview', '');
+      }
+      if(state.step===3 && !cleanText(state.role_mode) && roleInput){
+        state.role_mode = roleInput;
+        setPreview('rolePreview', roleInput);
+      }
+    }
+
+    function syncModeFields(){
+      state.task_text = document.getElementById('taskText').value.trim();
+      state.pedant_context = document.getElementById('contextText').value.trim();
+      state.pedant_result = document.getElementById('resultTextInput').value.trim();
+      state.pedant_extra = document.getElementById('modeClarifyText').value.trim();
+      state.night_context = document.getElementById('nightContextText').value.trim();
+      state.night_format = document.getElementById('formatText').value.trim();
+      state.night_exclude = document.getElementById('excludeText').value.trim();
+      state.night_result = document.getElementById('nightResultText').value.trim();
+      state.night_example = document.getElementById('exampleText').value.trim();
+    }
+
+    function renderResult(){
+      syncModeFields();
+      const result = assemblePrompt(state);
+      resultTextEl.textContent = result.prompt || '';
+      builtWith.textContent = `Собрано: ${MODE_MAP[state.mode].label} · ${state.role_mode} · ${state.main_direction}/${state.sub_direction} · детерминированный движок`;
+      if(aiVersionText && !aiVersionText.value.trim()) aiVersionText.value = '';
+      if(result.warnings && result.warnings.length){ warnBox.classList.remove('hidden'); warnBox.textContent = result.warnings.join(' '); }
+      else { warnBox.classList.add('hidden'); warnBox.textContent = ''; }
+    }
+
+    function copyResult(){
+      const text = resultTextEl.textContent.trim(); if(!text) return;
+      const onSuccess = () => { mainBtn.textContent = 'Скопировано'; copyTopBtn.textContent = '✅'; showToast('Скопировано'); setTimeout(() => { if(isResultStep()) mainBtn.textContent='Копировать результат'; copyTopBtn.textContent='📋'; }, 1200); };
+      const fallback = () => {
+        const helper = document.getElementById('copyHelper'); helper.classList.remove('hidden'); helper.value = text; helper.focus(); helper.select(); helper.setSelectionRange(0, helper.value.length);
+        try { document.execCommand('copy') ? onSuccess() : alert('Автокопирование заблокировано браузером.'); } catch(e){ alert('Автокопирование заблокировано браузером.'); }
+      };
+      if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(onSuccess).catch(fallback); else fallback();
+    }
+
+    function saveDraft(){ try{ syncModeFields(); localStorage.setItem(STORAGE_KEYS.draft, JSON.stringify(state)); }catch(e){} }
+    function loadDraft(){ try{ const raw = localStorage.getItem(STORAGE_KEYS.draft); if(!raw) return; const saved = JSON.parse(raw); if(saved && typeof saved === 'object') Object.assign(state, saved); }catch(e){} }
+    function getSavedConfigs(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEYS.saved)||'[]')}catch(e){return []} }
+    function setSavedConfigs(items){ localStorage.setItem(STORAGE_KEYS.saved, JSON.stringify(items)) }
+    function saveCurrentConfig(){
+      syncModeFields();
+      const items = getSavedConfigs();
+      const snapshot = JSON.parse(JSON.stringify(state));
+      const result = assemblePrompt(snapshot);
+      items.unshift({id:'cfg_'+Date.now(),title:buildSaveTitle(snapshot),created_at:new Date().toISOString(),state:snapshot,prompt:result.prompt||''});
+      setSavedConfigs(items.slice(0,20)); renderSavedConfigs(); showToast('Сохранено в браузере');
+    }
+    function loadSavedConfig(id){
+      const item = getSavedConfigs().find(x => x.id === id); if(!item) return;
+      Object.assign(state, JSON.parse(JSON.stringify(item.state)));
+      hydrateFields(); renderMainDirections(); renderSubDirections(); renderRoles(); renderClarifications(); updateModeUi();
+      const target = Math.min(state.step || 1, getLastQuestionStep()); showStep(target); showToast('Конфиг загружен');
+    }
+    function deleteSavedConfig(id){ setSavedConfigs(getSavedConfigs().filter(x => x.id !== id)); renderSavedConfigs(); }
+    function renderSavedConfigs(){
+      const box = document.getElementById('savedConfigsBox'); const items = getSavedConfigs();
+      if(!items.length){ box.innerHTML = '<div class="summary-text">Пока ничего не сохранено.</div>'; return; }
+      box.innerHTML = '<div class="saved-list"></div>'; const list = box.querySelector('.saved-list');
+      items.forEach(item => {
+        const d = new Date(item.created_at); const meta = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        const el = document.createElement('div'); el.className = 'saved-item';
+        el.innerHTML = `<div class="saved-title">${item.title}</div><div class="saved-meta">${meta}</div><div class="saved-actions"><button class="saved-btn" data-load="${item.id}">Загрузить</button><button class="saved-btn" data-copy="${item.id}">Копировать</button><button class="saved-btn" data-delete="${item.id}">Удалить</button></div>`;
+        list.appendChild(el);
+      });
+      list.querySelectorAll('[data-load]').forEach(btn => btn.onclick = () => loadSavedConfig(btn.dataset.load));
+      list.querySelectorAll('[data-delete]').forEach(btn => btn.onclick = () => deleteSavedConfig(btn.dataset.delete));
+      list.querySelectorAll('[data-copy]').forEach(btn => btn.onclick = () => { const item = getSavedConfigs().find(x => x.id === btn.dataset.copy); if(item && item.prompt) navigator.clipboard?.writeText(item.prompt).catch(()=>{}); });
+    }
+
+    function hydrateFields(){
+      document.getElementById('taskText').value = state.task_text || '';
+      document.getElementById('contextText').value = state.pedant_context || '';
+      document.getElementById('resultTextInput').value = state.pedant_result || '';
+      document.getElementById('modeClarifyText').value = state.pedant_extra || '';
+      document.getElementById('nightContextText').value = state.night_context || '';
+      document.getElementById('formatText').value = state.night_format || '';
+      document.getElementById('excludeText').value = state.night_exclude || '';
+      document.getElementById('nightResultText').value = state.night_result || '';
+      document.getElementById('exampleText').value = state.night_example || '';
+    }
+
+    function resetAll(){
+      localStorage.removeItem(STORAGE_KEYS.draft);
+      Object.assign(state, {mode:'light', step:1, main_direction:'', sub_direction:'', role_mode:'', task_text:'', clarifications:{}, custom_main_direction:'', custom_sub_direction:'',
+      main_matched_entry_id:'', main_matched_entry_kind:'', pedant_context:'', pedant_result:'', pedant_extra:'', night_context:'', night_format:'', night_exclude:'', night_result:'', night_example:''});
+      document.getElementById('directionFilter').value = '';
+      document.getElementById('subDirectionFilter').value = '';
+      document.getElementById('roleFilter').value = '';
+      hydrateFields(); renderMainDirections(); renderSubDirections(); renderRoles(); renderClarifications(); showStep(1); showToast('Сброшено');
+    }
+
+    function nextStep(){
+      applyManualSelections();
+      const error = validateCurrentStep(); if(error){ alert(error); return; }
+      syncModeFields();
+      renderMainDirections(); renderSubDirections(); renderRoles(); renderClarifications(); updateStepSummaries();
+      if(isResultStep()){ copyResult(); return; }
+      if(state.step === getLastQuestionStep()){
+        renderResult(); renderSavedConfigs(); showStep(7); return;
+      }
+      showStep(state.step + 1);
+    }
+
+    mainBtn.onclick = nextStep;
+    document.getElementById('editTaskBtn').onclick = () => showStep(4);
+    document.getElementById('restartBtn').onclick = resetAll;
+    document.getElementById('editModeBtn').onclick = () => showStep(1);
+    backBtn.onclick = () => {
+      if(isResultStep()) { showStep(getLastQuestionStep()); return; }
+      if(state.step > 1) showStep(state.step - 1);
+    };
+    document.getElementById('saveConfigBtn').onclick = saveCurrentConfig;
+    document.getElementById('resetAllBtn').onclick = resetAll;
+    copyTopBtn.onclick = copyResult;
+    document.getElementById('infoCloseBtn').onclick = () => document.getElementById('infoModal').classList.remove('show');
+    document.getElementById('infoModal').onclick = (e) => { if(e.target.id==='infoModal') document.getElementById('infoModal').classList.remove('show'); };
+    document.getElementById('modeSelect').addEventListener('change', (e) => {
+      state.mode = e.target.value;
+      if(state.step > getLastQuestionStep()) state.step = getLastQuestionStep();
+      updateModeUi(); updateStepSummaries(); renderProgressAndVisibility(); saveDraft(); showToast('Режим обновлён');
+    });
+
+    const directionFilterEl = document.getElementById('directionFilter');
+    const subDirectionFilterEl = document.getElementById('subDirectionFilter');
+
+    function mountFilterClearButton(inputEl){
+      if(!inputEl || inputEl.parentElement.querySelector('.filter-clear-btn')) return;
+      inputEl.classList.add('with-clear');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'filter-clear-btn';
+      btn.setAttribute('aria-label', 'Очистить поиск');
+      btn.textContent = '✕';
+      btn.addEventListener('click', () => {
+        inputEl.value = '';
+        inputEl.focus();
+        if(inputEl.id === 'directionFilter'){
+          hideSuggestBox('directionSuggest');
+          renderMainDirections();
+        } else {
+          hideSuggestBox('subDirectionSuggest');
+          renderSubDirections();
+        }
+      });
+      inputEl.parentElement.appendChild(btn);
+    }
+
+    mountFilterClearButton(directionFilterEl);
+    mountFilterClearButton(subDirectionFilterEl);
+
+    directionFilterEl.addEventListener('input', () => {
+      renderMainDirections();
+    });
+    subDirectionFilterEl.addEventListener('input', () => {
+      renderSubDirections();
+    });
+    directionFilterEl.addEventListener('keydown', (e) => {
+      if(e.key === 'ArrowDown'){ e.preventDefault(); moveSuggestSelection('directionSuggest', 1); }
+      if(e.key === 'ArrowUp'){ e.preventDefault(); moveSuggestSelection('directionSuggest', -1); }
+      if(e.key === 'Enter'){
+        const active = getActiveSuggestItem('directionSuggest', directionSuggestions);
+        if(active){ e.preventDefault(); pickMainDirection(active, true); }
+      }
+    });
+    subDirectionFilterEl.addEventListener('keydown', (e) => {
+      if(e.key === 'ArrowDown'){ e.preventDefault(); moveSuggestSelection('subDirectionSuggest', 1); }
+      if(e.key === 'ArrowUp'){ e.preventDefault(); moveSuggestSelection('subDirectionSuggest', -1); }
+      if(e.key === 'Enter'){
+        const active = getActiveSuggestItem('subDirectionSuggest', subDirectionSuggestions);
+        if(active){ e.preventDefault(); pickSubDirection(active, true); }
+      }
+    });
+    directionFilterEl.addEventListener('blur', () => setTimeout(() => hideSuggestBox('directionSuggest'), 120));
+    subDirectionFilterEl.addEventListener('blur', () => setTimeout(() => hideSuggestBox('subDirectionSuggest'), 120));
+    document.getElementById('roleFilter').addEventListener('input', renderRoles);
+
+    document.getElementById('aiVersionChip').onclick = async () => {
+      const wasHidden = aiPanel.classList.contains('hidden');
+      aiPanel.classList.remove('hidden');
+      if(wasHidden || !aiVersionText.value.trim()) await generateAiVersion();
+    };
+    document.getElementById('regenerateAiVersionBtn').onclick = () => generateAiVersion();
+    document.getElementById('copyAiVersionBtn').onclick = () => {
+      const text = aiVersionText.value.trim();
+      if(!text) return;
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(() => showToast('Скопировано'));
+      } else {
+        const helper = document.getElementById('copyHelper');
+        helper.classList.remove('hidden');
+        helper.value = text; helper.focus(); helper.select(); helper.setSelectionRange(0, helper.value.length);
+        try { document.execCommand('copy'); showToast('Скопировано'); } catch(e){}
+      }
+    };
+
+    document.querySelectorAll('[data-example]').forEach(btn => btn.onclick = () => { appendToInput(document.getElementById('taskText'), btn.dataset.example); saveDraft(); });
+    [
+      'taskText','contextText','resultTextInput','modeClarifyText','nightContextText','formatText','excludeText','nightResultText','exampleText'
+    ].forEach(id => document.getElementById(id).addEventListener('input', saveDraft));
+
+    document.addEventListener('keydown', (e) => {
+      const tag = (e.target.tagName || '').toLowerCase();
+      if(e.key === 'Enter' && !e.shiftKey){
+        if(tag === 'textarea' || tag === 'input'){
+          e.preventDefault();
+          nextStep();
+        }
+      }
+    });
+
+
+    /* === PROMTMEISTER v23.23 search rebuild patch === */
+    const TOP10_IDS = ["it","business","education","marketing","health","music","travel","life","documents","gos"];
+    const FULL_DIRECTIONS = [
+      {id:"it",name:"ИТ",chips:["Код","Ошибки","Разбор кода","Логика алгоритма","Архитектура решения"],aliases:["ит","айти","it","разработка","код","программирование"]},
+      {id:"business",name:"Бизнес",chips:["Старт","Прибыль","Бизнес модель","Анализ ниши","Точки роста"],aliases:["бизнес","дело","предпринимательство","компания"]},
+      {id:"education",name:"Обучение",chips:["Практика","Навык","План обучения","Разбор темы","Проверка знаний"],aliases:["обучение","учеба","учиться","курсы"]},
+      {id:"marketing",name:"Маркетинг",chips:["Реклама","Контент","Целевая аудитория","Анализ конкурентов","Воронка продаж"],aliases:["маркетинг","реклама","продвижение"]},
+      {id:"health",name:"Здоровье",chips:["Здоровье","Симптомы","Образ жизни","Контроль факторов","Подготовка к врачу"],aliases:["здоровье","самочувствие","медицина"]},
+      {id:"food",name:"Питание",chips:["Рацион","Калории","Дневной рацион","Контроль калорий","Режим питания"],aliases:["еда","питание","диета","рацион"]},
+      {id:"music",name:"Музыка",chips:["Музыка","Бит","Создание мелодии","Подбор аккордов","Разбор композиции"],aliases:["музыка","трек","звук"]},
+      {id:"art",name:"Дизайн",chips:["Дизайн","Цвет","Подбор цвета","Компоновка элементов","Визуальный стиль"],aliases:["дизайн","арт","живопись","рисование"]},
+      {id:"travel",name:"Путешествия",chips:["Поездка","Маршрут","План поездки","Бюджет поездки","Документы выезда"],aliases:["путешествия","поездка","туризм","отдых"]},
+      {id:"life",name:"Жизнь",chips:["Дом","Порядок","Домашние дела","Организация быта","Экономия времени"],aliases:["жизнь","быт","повседневность"]},
+      {id:"documents",name:"Документы",chips:["Документ","Заявление","Официальный текст","Подготовка заявления","Проверка формулировок"],aliases:["документы","бумаги","документ","заявление","акт"]},
+      {id:"law",name:"Право",chips:["Закон","Норма","Правовая норма","Разбор ситуации","Юридический риск"],aliases:["право","юрист","законы","юридический"]},
+      {id:"housing",name:"ЖКХ",chips:["Жалоба","Услуги","Жалоба ЖКХ","Коммунальный спор","Фиксация ущерба"],aliases:["жкх","коммуналка","управляющая компания","ук"]},
+      {id:"gos",name:"Госуслуги",chips:["Жалоба","Обращение","Жалоба ЖКХ","Жалоба дороги","Жалоба на светофоры"],aliases:["госуслуги","гос","обращение","жалобы","жалоба"]},
+      {id:"construction",name:"Строительство",chips:["Смета","Материалы","Смета работ","План монтажа","Контроль качества"],aliases:["строительство","стройка","ремонт","объект"]},
+      {id:"electro",name:"Электрика",chips:["Схема","Кабель","Схема питания","Монтаж кабеля","Поиск неисправности"],aliases:["электрика","электро","кабель","питание"]},
+      {id:"lowcurrent",name:"Слаботочка",chips:["Кабель","Оборудование","Монтаж системы","Пусконаладка системы","Исполнительная документация"],aliases:["слаботочка","апс","скуд","видеонаблюдение"]},
+      {id:"auto",name:"Авто",chips:["Машина","Поломки","Обслуживание авто","Расход топлива","Юридические вопросы"],aliases:["авто","машины","тачки","автомобиль","машина"]},
+      {id:"techpick",name:"Подбор техники",chips:["Смартфоны","Ноутбуки","Бытовая техника","Игровые консоли","Сравнение моделей"],aliases:["подбор техники","выбор техники","техника","гаджеты"]},
+      {id:"games",name:"Игры",chips:["Правила","Тактика","Игровые приемы","Разбор ошибок","Полезные лайфхаки"],aliases:["игры","игра","гейминг"]},
+    ];
+    const FULL_THEMES = [
+      {id:"theme_excel",name:"Excel",parent:"it",chips:["Формулы","Сводные таблицы","Обработка данных","Автоматизация","Ошибки формул"],aliases:["excel","эксель"]},
+      {id:"theme_sheets",name:"Google Sheets",parent:"it",chips:["Формулы","Импорт данных","Скрипты","Общий доступ","Ошибки расчетов"],aliases:["google sheets","гугл таблицы","таблицы гугл","гугл таб"]},
+      {id:"theme_autocad",name:"AutoCAD",parent:"construction",chips:["Чертеж","Слои","Работа слоями","Подготовка печати","Ошибки модели"],aliases:["autocad","автокад","кад"]},
+      {id:"theme_photoshop",name:"Photoshop",parent:"art",chips:["Ретушь","Слои","Обработка изображения","Цветокоррекция фото","Экспорт файла"],aliases:["photoshop","фотошоп"]},
+      {id:"theme_figma",name:"Figma",parent:"art",chips:["Макет","Компоненты","Макет интерфейса","Сетка элементов","Прототипирование"],aliases:["figma","фигма"]},
+      {id:"theme_fifa",name:"FIFA",parent:"games",chips:["Тактика","Команда","Игровые приемы","Анализ матчей","Карьера игрока"],aliases:["fifa","фифа"]},
+      {id:"theme_gta",name:"GTA",parent:"games",chips:["Миссии","Мир","Прохождение миссий","Скрытые механики","Онлайн режим"],aliases:["gta","гта"]},
+      {id:"theme_cs2",name:"CS2",parent:"games",chips:["Стрельба","Карты","Тактика раунда","Командная игра","Разбор ошибок"],aliases:["cs2","кс2","кс го","контра"]},
+      {id:"theme_dota2",name:"Dota 2",parent:"games",chips:["Герои","Линия","Выбор героя","Предметы героя","Командные действия"],aliases:["dota 2","дота 2","дота"]},
+      {id:"theme_minecraft",name:"Minecraft",parent:"games",chips:["Крафт","Выживание","Строительство базы","Игровые режимы","Моды игры"],aliases:["minecraft","майнкрафт"]},
+      {id:"theme_word",name:"Word",parent:"documents",chips:["Текст","Форматирование","Стили документа","Оглавление документа","Проверка ошибок"],aliases:["word","ворд"]},
+      {id:"theme_contract",name:"Договор",parent:"documents",chips:["Договор","Условия","Структура договора","Проверка условий","Юридические риски"],aliases:["договор","контракт"]},
+      {id:"theme_act",name:"Акт",parent:"documents",chips:["Акт","Ущерб","Фиксация ущерба","Описание ситуации","Подписи сторон"],aliases:["акт","акт затопления"]},
+      {id:"theme_aps",name:"АПС",parent:"lowcurrent",chips:["Пожарка","Система","Схема системы","Подбор оборудования","Пусконаладка"],aliases:["апс","пожарка","пожарная сигнализация"]},
+      {id:"theme_skud",name:"СКУД",parent:"lowcurrent",chips:["Доступ","Контроллер","Схема доступа","Настройка доступа","Проверка работы"],aliases:["скуд","контроль доступа"]},
+      {id:"theme_cctv",name:"Видеонаблюдение",parent:"lowcurrent",chips:["Камеры","Запись","Размещение камер","Настройка записи","Проверка сигнала"],aliases:["видеонаблюдение","камеры","cctv"]},
+      {id:"theme_phone",name:"Смартфоны",parent:"techpick",chips:["Телефон","Модель","Выбор модели","Настройка телефона","Решение проблем"],aliases:["смартфон","смартфоны","телефон","мобильник"]},
+      {id:"theme_laptop",name:"Ноутбуки",parent:"techpick",chips:["Ноутбук","Производительность","Выбор ноутбука","Сравнение моделей","Настройка работы"],aliases:["ноутбук","ноутбуки","ноут","laptop"]},
+    ];
+    let selectedThemeId = "";
+    let ACTIVE_MAIN_ITEMS = [];
+    function rebuildDataModel(){
+      MAIN_DIRECTIONS.splice(0, MAIN_DIRECTIONS.length, ...FULL_DIRECTIONS.map(v => ({id:v.id,name:v.name})));
+      Object.keys(SUB_DIRECTIONS).forEach(k => delete SUB_DIRECTIONS[k]);
+      Object.keys(DIRECTION_ALIASES).forEach(k => delete DIRECTION_ALIASES[k]);
+      Object.keys(SUB_DIRECTION_ALIASES).forEach(k => delete SUB_DIRECTION_ALIASES[k]);
+      FULL_DIRECTIONS.forEach(d => {
+        SUB_DIRECTIONS[d.id] = d.chips.map((chip, idx) => ({id:`${d.id}_${idx}`, name:chip}));
+        DIRECTION_ALIASES[d.id] = [...d.aliases];
+        SUB_DIRECTION_ALIASES[d.id] = [];
+      });
+      FULL_THEMES.forEach(t => {
+        MAIN_DIRECTIONS.push({id:t.id,name:t.name});
+        DIRECTION_ALIASES[t.id] = [...t.aliases, t.name];
+        SUB_DIRECTIONS[t.id] = t.chips.map((chip, idx) => ({id:`${t.id}_${idx}`, name:chip}));
+      });
+      ACTIVE_MAIN_ITEMS = [...MAIN_DIRECTIONS];
+    }
+    function getDirectionById(id){ return FULL_DIRECTIONS.find(v=>v.id===id); }
+    function getThemeById(id){ return FULL_THEMES.find(v=>v.id===id); }
+    const _origGetMainName = getMainName;
+    getMainName = function(id){
+      const d = ACTIVE_MAIN_ITEMS.find(v=>v.id===id);
+      return d ? d.name : _origGetMainName(id);
+    };
+    const _origGetSubName = getSubName;
+    getSubName = function(mainId, subId){
+      const list = SUB_DIRECTIONS[mainId] || [];
+      const x = list.find(v=>v.id===subId);
+      return x ? x.name : _origGetSubName(mainId, subId);
+    };
+    const _origRenderMainDirections = renderMainDirections;
+    renderMainDirections = function(){
+      const input = document.getElementById('directionFilter');
+      const q = normalizeSearchValue(input.value || '');
+      const box = document.getElementById('mainDirections');
+      box.innerHTML = '';
+      const baseItems = ACTIVE_MAIN_ITEMS;
+      const suggestions = q ? findSuggestions(q, baseItems, DIRECTION_ALIASES) : [];
+      directionSuggestions = suggestions;
+      const visibleIds = q ? suggestions.map(item => item.id) : TOP10_IDS;
+      baseItems.filter(item => visibleIds.includes(item.id)).forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option' + (state.main_direction === item.id ? ' active' : '');
+        btn.textContent = item.name;
+        btn.onclick = () => pickMainDirection(item, true);
+        box.appendChild(btn);
+      });
+      if(q && suggestions.length) renderSuggestBox('directionSuggest', suggestions.map(v => ({...v, meta: getThemeById(v.id) ? 'тема' : 'направление'})), '', (item) => pickMainDirection(item, true));
+      else hideSuggestBox('directionSuggest');
+      if(q) scheduleAiSuggestions('direction');
+      setPreview('directionPreview', state.main_direction ? getMainName(state.main_direction) : '');
+      if(!box.children.length) box.innerHTML = '<div class="summary-text">Ничего не найдено.</div>';
+    };
+    const _origPickMainDirection = pickMainDirection;
+    pickMainDirection = function(item, updateInput = true){
+      selectedThemeId = getThemeById(item.id) ? item.id : "";
+      state.main_direction = item.id;
+      state.sub_direction = '';
+      if(updateInput) document.getElementById('directionFilter').value = item.name;
+      const subInput = document.getElementById('subDirectionFilter'); if(subInput) subInput.value = '';
+      hideSuggestBox('directionSuggest');
+      renderMainDirections();
+      renderSubDirections();
+      updateStepSummaries();
+      setPreview('directionPreview', item.name);
+      saveDraft();
+    };
+    const _origRenderSubDirections = renderSubDirections;
+    renderSubDirections = function(){
+      const input = document.getElementById('subDirectionFilter');
+      const q = normalizeSearchValue(input.value || '');
+      const box = document.getElementById('subDirections');
+      box.innerHTML = '';
+      const list = SUB_DIRECTIONS[state.main_direction] || [];
+      const suggestions = q ? findSuggestions(q, list, SUB_DIRECTION_ALIASES) : [];
+      subDirectionSuggestions = suggestions;
+      const visibleIds = q ? suggestions.map(item => item.id) : list.map(item => item.id);
+      list.filter(item => visibleIds.includes(item.id)).forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option' + (state.sub_direction === item.id ? ' active' : '');
+        btn.textContent = item.name;
+        btn.onclick = () => pickSubDirection(item, true);
+        box.appendChild(btn);
+      });
+      if(q && suggestions.length) renderSuggestBox('subDirectionSuggest', suggestions, 'специализация', (item) => pickSubDirection(item, true));
+      else hideSuggestBox('subDirectionSuggest');
+      if(q) scheduleAiSuggestions('subdirection');
+      setPreview('subDirectionPreview', state.sub_direction ? getSubName(state.main_direction, state.sub_direction) : '');
+      if(!list.length) box.innerHTML = '<div class="summary-text">Сначала выбери направление.</div>';
+      if(list.length && !box.children.length) box.innerHTML = '<div class="summary-text">Ничего не найдено.</div>';
+    };
+    enforceSearchLimits = function(value){
+      const raw = String(value || '').replace(/ё/g,'е').replace(/\s+/g,' ');
+      const trimmedStart = raw.trimStart();
+      const words = trimmedStart.split(' ');
+      if(words.length <= 3) return trimmedStart;
+      return words.slice(0,3).join(' ');
+    };
+    normalizeSearchValue = function(value){
+      return String(value || '').replace(/ё/g,'е').toLowerCase().replace(/\s+/g,' ').trim();
+    };
+    tokenizeSearchValue = function(value){
+      return normalizeSearchValue(value).split(/\s+/).filter(Boolean);
+    };
+    applyManualSelections = function(){
+      const directionInput = cleanText(document.getElementById('directionFilter')?.value);
+      const subDirectionInput = cleanText(document.getElementById('subDirectionFilter')?.value);
+      const roleInput = cleanText(document.getElementById('roleFilter')?.value);
+      if(state.step===1 && !cleanText(state.main_direction) && directionInput){
+        const m = findSuggestions(directionInput, ACTIVE_MAIN_ITEMS, DIRECTION_ALIASES)[0];
+        if(m) pickMainDirection(m, true);
+      }
+      if(state.step===2 && !cleanText(state.sub_direction) && subDirectionInput){
+        const list = SUB_DIRECTIONS[state.main_direction] || [];
+        const m = findSuggestions(subDirectionInput, list, SUB_DIRECTION_ALIASES)[0];
+        if(m) pickSubDirection(m, true);
+      }
+      if(state.step===3 && !cleanText(state.role_mode) && roleInput){
+        state.role_mode = roleInput;
+        setPreview('rolePreview', roleInput);
+      }
+    };
+    function patchSearchInit(){
+      rebuildDataModel();
+      renderMainDirections();
+      renderSubDirections();
+    }
+
+
+    loadDraft();
+    if(!state.mode) state.mode = 'light';
+    hydrateFields();
+    renderMainDirections();
+    renderSubDirections();
+    patchSearchInit();
+    renderRoles();
+    renderClarifications();
+    renderSavedConfigs();
+    updateModeUi();
+    updateStepSummaries();
+    showStep(Math.min(state.step || 1, getLastQuestionStep()));
+  
+    // Separate AI leaf. This layer does not touch early steps.
+    (() => {
+      const aiLeaf = document.getElementById('aiLeaf');
+      const aiLeafText = document.getElementById('aiLeafText');
+      const aiLeafStatus = document.getElementById('aiLeafStatus');
+      const aiLeafFast = document.getElementById('aiLeafFast');
+      const aiLeafMedium = document.getElementById('aiLeafMedium');
+      const aiLeafDeep = document.getElementById('aiLeafDeep');
+      const closeAiLeafBtn = document.getElementById('closeAiLeafBtn');
+      const closeAiLeafBtn2 = document.getElementById('closeAiLeafBtn2');
+      const copyAiLeafBtn = document.getElementById('copyAiLeafBtn');
+      const saveAiLeafBtn = document.getElementById('saveAiLeafBtn');
+      let aiLeafDepth = 'fast';
+
+      function setAiLeafDepth(mode){
+        aiLeafDepth = mode;
+        [aiLeafFast, aiLeafMedium, aiLeafDeep].forEach(btn => btn && btn.classList.remove('active'));
+        if(mode === 'fast' && aiLeafFast) aiLeafFast.classList.add('active');
+        if(mode === 'medium' && aiLeafMedium) aiLeafMedium.classList.add('active');
+        if(mode === 'deep' && aiLeafDeep) aiLeafDeep.classList.add('active');
+        const labels = {fast:'Быстро', medium:'Средне', deep:'Глубоко'};
+        if(aiLeafStatus) aiLeafStatus.textContent = 'Режим: ' + labels[mode] + '. Здесь открыт уже собранный аналоговый промт. Следующим шагом сюда подключим работу ИИ.';
+      }
+
+      function openAiLeaf(){
+        const resultNode = document.getElementById('resultText');
+        if(aiLeafText) aiLeafText.value = ((resultNode && resultNode.textContent) || '').trim();
+        setAiLeafDepth(aiLeafDepth);
+        if(aiLeaf) aiLeaf.classList.add('show');
+        window.scrollTo({top:0, behavior:'auto'});
+      }
+
+      function closeAiLeaf(){
+        if(aiLeaf) aiLeaf.classList.remove('show');
+      }
+
+      async function copyAiLeaf(){
+        const text = (aiLeafText && aiLeafText.value || '').trim();
+        if(!text) return;
+        try{
+          if(navigator.clipboard && window.isSecureContext){
+            await navigator.clipboard.writeText(text);
+            if(aiLeafStatus) aiLeafStatus.textContent = 'Скопировано.';
+          } else {
+            aiLeafText.focus();
+            aiLeafText.select();
+            aiLeafText.setSelectionRange(0, aiLeafText.value.length);
+            const copied = document.execCommand('copy');
+            if(aiLeafStatus) aiLeafStatus.textContent = copied ? 'Скопировано.' : 'Текст выделен для ручного копирования.';
+          }
+        } catch(e){
+          aiLeafText.focus();
+          aiLeafText.select();
+          aiLeafText.setSelectionRange(0, aiLeafText.value.length);
+          if(aiLeafStatus) aiLeafStatus.textContent = 'Текст выделен для ручного копирования.';
+        }
+      }
+
+      function saveAiLeaf(){
+        const text = (aiLeafText && aiLeafText.value || '').trim();
+        if(!text) return;
+        const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+        a.href = url;
+        a.download = 'promtmeister-ai-leaf-' + aiLeafDepth + '-' + stamp + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        if(aiLeafStatus) aiLeafStatus.textContent = 'Файл сохранён.';
+      }
+
+      const aiVersionChip = document.getElementById('aiVersionChip');
+      if(aiVersionChip) aiVersionChip.onclick = openAiLeaf;
+      if(aiLeafFast) aiLeafFast.addEventListener('click', () => setAiLeafDepth('fast'));
+      if(aiLeafMedium) aiLeafMedium.addEventListener('click', () => setAiLeafDepth('medium'));
+      if(aiLeafDeep) aiLeafDeep.addEventListener('click', () => setAiLeafDepth('deep'));
+      if(closeAiLeafBtn) closeAiLeafBtn.addEventListener('click', closeAiLeaf);
+      if(closeAiLeafBtn2) closeAiLeafBtn2.addEventListener('click', closeAiLeaf);
+      if(copyAiLeafBtn) copyAiLeafBtn.addEventListener('click', copyAiLeaf);
+      if(saveAiLeafBtn) saveAiLeafBtn.addEventListener('click', saveAiLeaf);
+    })();
+
+  </script>
+
+  
+  <div class="edit-backdrop" id="editAiModal">
+    <div class="edit-modal">
+      <div class="badge">Правка AI версии</div>
+      <div class="modal-title">Изменить версию</div>
+      <input id="editAiInput" class="edit-input" placeholder="Напиши, что изменить или выбери роль ниже..." />
+      <div class="edit-filter">
+        <input id="editAiRoleFilter" class="edit-input" placeholder="Поиск по ролям и стилям..." />
+      </div>
+      <div class="edit-role-list" id="editAiRoleList"></div>
+      <div class="small-actions">
+        <button class="tiny" id="applyAiEditBtn" type="button">Применить</button>
+        <button class="tiny" id="closeAiEditBtn" type="button">Отмена</button>
+      </div>
+    </div>
+  </div>
+  <div class="ai-page" id="aiPage">
+    <div class="ai-page-shell">
+      <div class="ai-page-card">
+        <div class="ai-page-row" style="margin-top:0;align-items:flex-start">
+          <button class="ai-page-btn secondary" id="aiPageBackBtn" type="button" style="flex:0 0 auto;min-width:auto;">Назад</button>
+          <div style="flex:1">
+            <div class="ai-page-title">Версия ИИ</div>
+            <div class="ai-page-meta">deepseek refiner / ai page</div>
+          </div>
+        </div>
+              </div>
+
+      <div class="ai-page-card">
+        <div class="ai-page-label">Режим генерации</div>
+        <div class="ai-page-chips">
+          <button class="ai-page-chip active" type="button" data-ai-depth="fast">Быстро</button>
+          <button class="ai-page-chip" type="button" data-ai-depth="medium">Средне</button>
+          <button class="ai-page-chip" type="button" data-ai-depth="deep">Глубоко</button>
+        </div>
+        
+      </div>
+
+      
+      <div class="ai-page-card ai-page-maincard">
+        <div class="ai-page-label">Текст</div>
+        <div class="ai-page-tabrow">
+          <button class="ai-page-tab active" id="aiTabSourceBtn" type="button">Исходный</button>
+          <button class="ai-page-tab" id="aiTabVersionBtn" type="button">Версия ИИ</button>
+        </div>
+        <div class="ai-page-status" id="aiPageStatus">Пока открыт исходный промт.</div>
+
+        <div class="ai-flip-wrap">
+          <div class="ai-flip-card" id="aiFlipCard">
+            <div class="ai-face ai-face-front">
+              <textarea class="ai-page-textarea ai-page-maintext" id="aiPageSourceText" readonly></textarea>
+            </div>
+            <div class="ai-face ai-face-back">
+              <textarea class="ai-page-textarea ai-page-maintext" id="aiPageVersionText" readonly></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-page-row">
+          <button class="ai-page-btn" id="aiPageRunBtn" type="button">ДПОБР</button>
+                    
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+<script>
+(function(){
+  const API_URL = "http://94.125.101.253:3000/api/ai";
+  const MODEL = "deepseek-chat";
+
+  const aiVersionChip = document.getElementById('aiVersionChip');
+  const resultText = document.getElementById('resultText');
+
+  const aiPage = document.getElementById('aiPage');
+  const aiPageBackBtn = document.getElementById('aiPageBackBtn');
+  const aiPageHomeBtn = document.getElementById('aiPageHomeBtn');
+  const aiPageRunBtn = document.getElementById('aiPageRunBtn');
+  const aiPageMiniCopyBtn = document.getElementById('aiPageMiniCopyBtn');
+  const aiPageStatus = document.getElementById('aiPageStatus');
+  const aiPageSourceText = document.getElementById('aiPageSourceText');
+  const aiPageVersionText = document.getElementById('aiPageVersionText');
+  const aiTabSourceBtn = document.getElementById('aiTabSourceBtn');
+  const aiTabVersionBtn = document.getElementById('aiTabVersionBtn');
+  const aiFlipCard = document.getElementById('aiFlipCard');
+
+  let aiDepth = 'fast';
+  let aiBusy = false;
+  let aiStartedAt = 0;
+
+  const DEPTH = {
+    fast: { label:'Быстро', temperature:0.08, max_tokens:420, hint:'короче и шаблоннее' },
+    medium: { label:'Средне', temperature:0.16, max_tokens:900, hint:'сильный рабочий баланс' },
+    deep: { label:'Глубоко', temperature:0.22, max_tokens:1400, hint:'глубже и плотнее' }
+  };
+
+  function setAiDepth(mode){
+    aiDepth = mode;
+    document.querySelectorAll('[data-ai-depth]').forEach(btn => btn.classList.remove('active'));
+    const active = document.querySelector('[data-ai-depth="' + mode + '"]');
+    if(active) active.classList.add('active');
+  }
+
+  function switchAiTab(mode){
+    if(aiTabSourceBtn) aiTabSourceBtn.classList.toggle('active', mode === 'source');
+    if(aiTabVersionBtn) aiTabVersionBtn.classList.toggle('active', mode === 'version');
+    if(aiFlipCard) aiFlipCard.classList.toggle('is-flipped', mode === 'version');
+    if(mode === 'source'){
+      aiPageStatus.className = 'ai-page-status';
+      aiPageStatus.textContent = 'Исходный промт.';
+    } else {
+      aiPageStatus.className = 'ai-page-status';
+      aiPageStatus.textContent = (aiPageVersionText.value || '').trim() ? 'Версия ИИ.' : 'Версия ИИ пока не собрана.';
+    }
+  }
+
+  function openAiPage(){
+    if(aiPageSourceText) aiPageSourceText.value = ((resultText && resultText.textContent) || '').trim();
+    if(aiPageVersionText) aiPageVersionText.value = '';
+    setAiDepth('fast');
+    switchAiTab('source');
+    if(aiPage) aiPage.classList.add('show');
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+
+  function closeAiPage(){
+    if(aiPage) aiPage.classList.remove('show');
+  }
+
+  function resetToStart(){
+    try{
+      if(typeof state !== 'undefined'){
+        state.step = 1;
+        showStep(1);
+      }
+    } catch(e){}
+    closeAiPage();
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+
+  function setBusy(flag, text){
+    aiBusy = flag;
+    if(aiPageRunBtn) aiPageRunBtn.disabled = flag;
+    if(flag){
+      aiPageStatus.className = 'ai-page-status busy';
+      aiPageStatus.innerHTML = '<span class="ai-page-spinner"></span>' + text;
+    }
+  }
+
+  function buildRefinePrompt(analogPrompt){
+    const cfg = DEPTH[aiDepth] || DEPTH.fast;
+    return [
+      'Ты встроенный AI Prompt Refiner внутри ПРОМТМЕЙСТЕРА.',
+      'Твоя задача — взять уже собранный аналоговый промт и пересобрать его в более сильную AI-версию.',
+      'Ты не отвечаешь на исходную задачу напрямую. Ты возвращаешь только новый промт.',
+      'Сохрани ядро исходного смысла.',
+      'Усиль роль, контекст, ограничения, формат и поведенческую модель.',
+      'Язык ответа должен совпадать с языком исходного промта.',
+      'Не добавляй воду.',
+      'Не расширяй scope без необходимости.',
+      '',
+      'Текущий режим: ' + cfg.label + '.',
+      aiDepth === 'fast'
+        ? 'Сделай короче, жёстче и шаблоннее. Только боевой каркас.'
+        : aiDepth === 'medium'
+        ? 'Сделай сильную рабочую версию без раздувания.'
+        : 'Сделай более глубокую и плотную версию, но без лишнего.',
+      '',
+      'Структура желательна такая:',
+      '<role>...</role>',
+      '<context>...</context>',
+      '<constraints>...</constraints>',
+      '<format>...</format>',
+      '<behavior>...</behavior>',
+      '<expected_result>...</expected_result>',
+      '',
+      'Вот аналоговый промт:',
+      analogPrompt
+    ].join('\n');
+  }
+
+  async function runAiRefine(){
+    if(aiBusy) return;
+    const analog = (aiPageSourceText && aiPageSourceText.value || '').trim();
+    if(!analog){
+      aiPageStatus.className = 'ai-page-status error';
+      aiPageStatus.textContent = 'Нет исходного аналогового промта.';
+      return;
+    }
+
+    const cfg = DEPTH[aiDepth] || DEPTH.fast;
+    aiPageVersionText.value = '';
+    aiStartedAt = Date.now();
+    setBusy(true, 'DeepSeek усиливает промт... Режим: ' + cfg.label + '.');
+
+    try{
+      const res = await fetch(API_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          model: MODEL,
+          temperature: cfg.temperature,
+          max_tokens: cfg.max_tokens,
+          messages: [
+            {
+              role:'system',
+              content:'Ты строгий, краткий, инженерный AI Prompt Refiner. Ты не болтаешь и не отвечаешь на задачу. Ты только улучшаешь промт.'
+            },
+            {
+              role:'user',
+              content: buildRefinePrompt(analog)
+            }
+          ]
+        })
+      });
+
+      const data = await res.json();
+      setBusy(false);
+
+      if(!res.ok){
+        aiPageStatus.className = 'ai-page-status error';
+        aiPageStatus.textContent = 'Ошибка API.';
+        aiPageVersionText.value = JSON.stringify(data, null, 2);
+        switchAiTab('version');
+        return;
+      }
+
+      const answer = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+        ? data.choices[0].message.content.trim()
+        : '';
+
+      if(!answer){
+        aiPageStatus.className = 'ai-page-status error';
+        aiPageStatus.textContent = 'Пустой ответ от модели.';
+        return;
+      }
+
+      const elapsed = ((Date.now() - aiStartedAt) / 1000).toFixed(1);
+      aiPageVersionText.value = answer;
+      switchAiTab('version');
+      aiPageStatus.className = 'ai-page-status';
+      aiPageStatus.textContent = 'Готово. Время: ' + elapsed + ' сек.';
+    } catch(err){
+      setBusy(false);
+      aiPageStatus.className = 'ai-page-status error';
+      aiPageStatus.textContent = 'Ошибка сети или proxy.';
+      aiPageVersionText.value = String(err && err.message ? err.message : err);
+      switchAiTab('version');
+    } finally {
+      if(aiPageRunBtn) aiPageRunBtn.disabled = false;
+    }
+  }
+
+  async function copyCurrentText(){
+    const text = (aiTabVersionBtn && aiTabVersionBtn.classList.contains('active') ? aiPageVersionText.value : aiPageSourceText.value).trim();
+    if(!text){
+      aiPageStatus.className = 'ai-page-status error';
+      aiPageStatus.textContent = 'Нечего копировать.';
+      return;
+    }
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(text);
+      } else {
+        const helper = document.createElement('textarea');
+        helper.value = text;
+        helper.readOnly = true;
+        helper.style.position = 'fixed';
+        helper.style.left = '-9999px';
+        document.body.appendChild(helper);
+        helper.focus();
+        helper.select();
+        helper.setSelectionRange(0, helper.value.length);
+        document.execCommand('copy');
+        helper.remove();
+      }
+      aiPageStatus.className = 'ai-page-status';
+      aiPageStatus.textContent = 'Скопировано.';
+    } catch(e){
+      aiPageStatus.className = 'ai-page-status error';
+      aiPageStatus.textContent = 'Автокопирование не сработало.';
+    }
+  }
+
+  if(aiVersionChip) aiVersionChip.addEventListener('click', openAiPage);
+  if(aiPageBackBtn) aiPageBackBtn.addEventListener('click', closeAiPage);
+  if(aiPageHomeBtn) aiPageHomeBtn.addEventListener('click', resetToStart);
+  if(aiPageRunBtn) aiPageRunBtn.addEventListener('click', runAiRefine);
+  if(aiPageMiniCopyBtn) aiPageMiniCopyBtn.addEventListener('click', copyCurrentText);
+  if(aiTabSourceBtn) aiTabSourceBtn.addEventListener('click', () => switchAiTab('source'));
+  if(aiTabVersionBtn) aiTabVersionBtn.addEventListener('click', () => switchAiTab('version'));
+  document.querySelectorAll('[data-ai-depth]').forEach(btn => {
+    btn.addEventListener('click', () => setAiDepth(btn.dataset.aiDepth));
+  });
+})();
+</script>
+
+
+
+<script>
+(function(){
+  function ready(fn){
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', fn, {once:true});
+    } else {
+      fn();
+    }
+  }
+
+  ready(function(){
+    const chip = document.getElementById('aiVersionChip');
+    const page = document.getElementById('aiPage');
+    const resultText = document.getElementById('resultText');
+    const source = document.getElementById('aiPageSourceText');
+    const version = document.getElementById('aiPageVersionText');
+    const status = document.getElementById('aiPageStatus');
+    const flip = document.getElementById('aiFlipCard');
+    const tabSource = document.getElementById('aiTabSourceBtn');
+    const tabVersion = document.getElementById('aiTabVersionBtn');
+    const backBtn = document.getElementById('aiPageBackBtn');
+    const homeBtn = document.getElementById('aiPageHomeBtn');
+    const runBtn = document.getElementById('aiPageRunBtn');
+    const copyBtn = document.getElementById('aiPageMiniCopyBtn');
+    const depthBtns = Array.from(document.querySelectorAll('[data-ai-depth]'));
+
+    if(!chip || !page) return;
+
+    let aiDepth = 'fast';
+    let aiBusy = false;
+
+    const DEPTH = {
+      fast: { label:'Быстро', temperature:0.08, max_tokens:420 },
+      medium: { label:'Средне', temperature:0.16, max_tokens:900 },
+      deep: { label:'Глубоко', temperature:0.22, max_tokens:1400 }
+    };
+
+    function setStatus(text, isError=false, isBusyState=false){
+      if(!status) return;
+      status.className = 'ai-page-status' + (isError ? ' error' : '') + (isBusyState ? ' busy' : '');
+      status.textContent = text;
+    }
+
+    function switchTab(mode){
+      if(tabSource) tabSource.classList.toggle('active', mode === 'source');
+      if(tabVersion) tabVersion.classList.toggle('active', mode === 'version');
+      if(flip) flip.classList.toggle('is-flipped', mode === 'version');
+      if(status && !aiBusy){
+        setStatus(mode === 'source' ? 'Исходный промт.' : ((version && version.value.trim()) ? 'Версия ИИ.' : 'Версия ИИ пока не собрана.'));
+      }
+    }
+
+    function setDepth(mode){
+      aiDepth = mode;
+      depthBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.aiDepth === mode));
+    }
+
+    function openPage(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      if(source) source.value = (resultText?.textContent || '').trim();
+      if(version) version.value = '';
+      setDepth('fast');
+      switchTab('source');
+      page.classList.add('show');
+      window.scrollTo({top:0, behavior:'auto'});
+    }
+
+    function closePage(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      page.classList.remove('show');
+    }
+
+    function goHome(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      try{
+        if(typeof state !== 'undefined'){
+          state.step = 1;
+          if(typeof showStep === 'function') showStep(1);
+        }
+      }catch(_){}
+      page.classList.remove('show');
+      window.scrollTo({top:0, behavior:'auto'});
+    }
+
+    async function runRefine(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      if(aiBusy) return;
+      const analog = (source?.value || '').trim();
+      if(!analog){
+        setStatus('Нет исходного аналогового промта.', true, false);
+        return;
+      }
+      aiBusy = true;
+      if(runBtn) {
+        runBtn.disabled = true;
+        runBtn.textContent = 'Думает...';
+      }
+      setStatus('DeepSeek усиливает промт...', false, true);
+
+      const cfg = DEPTH[aiDepth] || DEPTH.fast;
+      const prompt = [
+        'Ты встроенный AI Prompt Refiner внутри ПРОМТМЕЙСТЕРА.',
+        'Твоя задача — взять уже собранный аналоговый промт и пересобрать его в более сильную AI-версию.',
+        'Ты не отвечаешь на исходную задачу напрямую. Ты возвращаешь только новый промт.',
+        'Сохрани ядро исходного смысла.',
+        'Усиль роль, контекст, ограничения, формат и поведенческую модель.',
+        'Язык ответа должен совпадать с языком исходного промта.',
+        'Не добавляй воду.',
+        'Не расширяй scope без необходимости.',
+        '',
+        'Текущий режим: ' + cfg.label + '.',
+        aiDepth === 'fast'
+          ? 'Сделай короче, жёстче и шаблоннее. Только боевой каркас.'
+          : aiDepth === 'medium'
+          ? 'Сделай сильную рабочую версию без раздувания.'
+          : 'Сделай более глубокую и плотную версию, но без лишнего.',
+        '',
+        'Структура желательна такая:',
+        '<role>...</role>',
+        '<context>...</context>',
+        '<constraints>...</constraints>',
+        '<format>...</format>',
+        '<behavior>...</behavior>',
+        '<expected_result>...</expected_result>',
+        '',
+        'Вот аналоговый промт:',
+        analog
+      ].join('\n');
+
+      try{
+        const res = await fetch('http://94.125.101.253:3000/api/ai', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            model:'deepseek-chat',
+            temperature:cfg.temperature,
+            max_tokens:cfg.max_tokens,
+            messages:[
+              {role:'system', content:'Ты строгий, краткий, инженерный AI Prompt Refiner. Ты не болтаешь и не отвечаешь на задачу. Ты только улучшаешь промт.'},
+              {role:'user', content:prompt}
+            ]
+          })
+        });
+        const data = await res.json();
+        if(!res.ok){
+          if(version) version.value = JSON.stringify(data, null, 2);
+          switchTab('version');
+          setStatus('Ошибка API.', true, false);
+          return;
+        }
+        const answer = data?.choices?.[0]?.message?.content?.trim() || '';
+        if(version) version.value = answer || 'Пустой ответ от модели.';
+        switchTab('version');
+        setStatus(answer ? 'Версия ИИ готова.' : 'Пустой ответ от модели.', !answer, false);
+      } catch(err){
+        if(version) version.value = String(err?.message || err);
+        switchTab('version');
+        setStatus('Ошибка сети или proxy.', true, false);
+      } finally{
+        aiBusy = false;
+        if(runBtn){
+          runBtn.disabled = false;
+          runBtn.textContent = 'ДПОБР';
+        }
+      }
+    }
+
+    async function copyCurrent(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      const text = (tabVersion?.classList.contains('active') ? version?.value : source?.value || '').trim();
+      if(!text){
+        setStatus('Нечего копировать.', true, false);
+        return;
+      }
+      try{
+        if(navigator.clipboard && window.isSecureContext){
+          await navigator.clipboard.writeText(text);
+        } else {
+          const helper = document.createElement('textarea');
+          helper.value = text;
+          helper.readOnly = true;
+          helper.style.position = 'fixed';
+          helper.style.left = '-9999px';
+          document.body.appendChild(helper);
+          helper.focus();
+          helper.select();
+          helper.setSelectionRange(0, helper.value.length);
+          document.execCommand('copy');
+          helper.remove();
+        }
+        setStatus('Скопировано.');
+      } catch(_) {
+        setStatus('Автокопирование не сработало.', true, false);
+      }
+    }
+
+    chip.onclick = null;
+    chip.addEventListener('click', openPage);
+    if(backBtn){ backBtn.onclick = null; backBtn.addEventListener('click', closePage); }
+    if(homeBtn){ homeBtn.onclick = null; homeBtn.addEventListener('click', goHome); }
+    if(runBtn){ runBtn.onclick = null; runBtn.addEventListener('click', runRefine); }
+    if(copyBtn){ copyBtn.onclick = null; copyBtn.addEventListener('click', copyCurrent); }
+    if(tabSource){ tabSource.onclick = null; tabSource.addEventListener('click', () => switchTab('source')); }
+    if(tabVersion){ tabVersion.onclick = null; tabVersion.addEventListener('click', () => switchTab('version')); }
+    depthBtns.forEach(btn => {
+      btn.onclick = null;
+      btn.addEventListener('click', () => setDepth(btn.dataset.aiDepth));
+    });
+  });
+})();
+
+
+/* === v23.26 search+custom+ai patch === */
+(function(){
+  state.dynamic_sub_options = state.dynamic_sub_options || [];
+  state.dynamic_sub_loading = false;
+  state.dynamic_sub_source = state.dynamic_sub_source || '';
+
+  if(!FULL_THEMES.find(v => v.id === 'theme_football')){
+    FULL_THEMES.push({
+      id:'theme_football',
+      name:'Футбол',
+      parent:'games',
+      chips:['Матчи','Тактика','Разбор матча','Тренировка игрока','Позиции игроков'],
+      aliases:['футбол','football','soccer','мяч']
+    });
+  }
+  if(!FULL_THEMES.find(v => v.id === 'theme_food')){
+    FULL_THEMES.push({
+      id:'theme_food',
+      name:'Еда',
+      parent:'food',
+      chips:['Рацион','Рецепты','План питания','Контроль калорий','Полезные блюда'],
+      aliases:['еда','покушать','кушать','пища','food']
+    });
+  }
+
+  const oldRebuild = rebuildDataModel;
+  rebuildDataModel = function(){
+    oldRebuild();
+    if(Array.isArray(DIRECTION_ALIASES['food'])){
+      DIRECTION_ALIASES['food'] = Array.from(new Set([...DIRECTION_ALIASES['food'],'еда','пища','food']));
+    }
+    if(Array.isArray(DIRECTION_ALIASES['games'])){
+      DIRECTION_ALIASES['games'] = Array.from(new Set([...DIRECTION_ALIASES['games'],'футбол','football','soccer']));
+    }
+    ACTIVE_MAIN_ITEMS = [...MAIN_DIRECTIONS];
+  };
+
+  function titleCase(str){
+    const s = cleanText(str || '');
+    if(!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function parseAiPayload(data){
+    if(Array.isArray(data)) return data;
+    if(Array.isArray(data?.suggestions)) return data.suggestions;
+    if(Array.isArray(data?.chips)) return data.chips;
+    if(Array.isArray(data?.items)) return data.items;
+    if(Array.isArray(data?.result)) return data.result;
+    const content = data?.choices?.[0]?.message?.content || data?.content || '';
+    return safeJsonArrayFromText(content);
+  }
+
+  function buildHeuristicNames(kind, query, mainLabel){
+    const q = titleCase(query || mainLabel || 'Тема');
+    if(kind === 'direction'){
+      return [q, q + ' задачи', q + ' вопросы'].slice(0,5);
+    }
+    return [
+      q,
+      'Разбор ' + q.toLowerCase(),
+      'Ошибки ' + q.toLowerCase(),
+      'Настройка ' + q.toLowerCase(),
+      'Советы ' + q.toLowerCase()
+    ].slice(0,5);
+  }
+
+  requestAiSuggestions = async function(kind, query, options, mainLabel){
+    const optionNames = (options || []).map(item => item.name).filter(Boolean);
+    const userPrompt = kind === 'direction'
+      ? [
+          'Запрос пользователя: ' + query,
+          optionNames.length ? ('Известные варианты: ' + optionNames.join(', ')) : 'Известных вариантов нет.',
+          'Верни JSON-массив из 3-5 коротких направлений или тем. Если есть точный вариант из базы — поставь его первым.'
+        ].join('\n')
+      : [
+          'Запрос пользователя: ' + (query || mainLabel || ''),
+          'Контекст направления: ' + (mainLabel || 'не указан'),
+          optionNames.length ? ('Известные специализации: ' + optionNames.join(', ')) : 'Известных специализаций нет.',
+          'Верни JSON-массив из 5 коротких чипсов для второго шага. Длина — 1-2 слова, без пояснений.'
+        ].join('\n');
+    try{
+      const res = await fetch(SEARCH_AI_API_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          model: SEARCH_AI_MODEL,
+          temperature: 0.15,
+          max_tokens: 160,
+          query,
+          kind,
+          mainLabel,
+          options: optionNames,
+          messages: [
+            { role:'system', content: buildAiSystemPrompt(kind, options || [], mainLabel) },
+            { role:'user', content: userPrompt }
+          ]
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok) throw new Error(data?.error?.message || data?.message || 'AI search error');
+      return parseAiPayload(data).map(v => cleanText(typeof v === 'string' ? v : (v?.name || v?.title || ''))).filter(Boolean).slice(0,5);
+    } catch(e){
+      return buildHeuristicNames(kind, query, mainLabel);
+    }
+  };
+
+  async function ensureDynamicSubOptions(force = false){
+    const source = cleanText(state.custom_main_direction || getMainName(state.main_direction) || document.getElementById('directionFilter')?.value);
+    if(!source) return;
+    if(state.dynamic_sub_loading) return;
+    if(!force && state.dynamic_sub_options?.length && state.dynamic_sub_source === source) return;
+    state.dynamic_sub_loading = true;
+    try{
+      const names = await requestAiSuggestions('subdirection', source, [], source);
+      const chips = names.map((name, idx) => ({id:'dyn_' + idx, name}));
+      state.dynamic_sub_options = chips;
+      state.dynamic_sub_source = source;
+      SUB_DIRECTIONS['__custom__'] = chips;
+      SUB_DIRECTION_ALIASES['__custom__'] = chips.flatMap(v => [v.name, normalizeSearchValue(v.name)]);
+      renderSubDirections();
+    } finally {
+      state.dynamic_sub_loading = false;
+    }
+  }
+
+  function makeCustomSuggestion(name, meta){ return {id:'__custom__', name: cleanText(name), meta: meta || 'свой вариант', score:1}; }
+
+  const oldPickMain = pickMainDirection;
+  pickMainDirection = function(item, updateInput = true){
+    state.dynamic_sub_options = [];
+    state.dynamic_sub_source = '';
+    oldPickMain(item, updateInput);
+    if((item.id === '__custom__' || getThemeById(item.id)) && state.step <= 1){
+      setTimeout(() => ensureDynamicSubOptions(true), 0);
+    }
+  };
+
+  const oldPickSub = pickSubDirection;
+  pickSubDirection = function(item, updateInput = true){
+    oldPickSub(item, updateInput);
+  };
+
+  renderMainDirections = function(){
+    const input = document.getElementById('directionFilter');
+    const qRaw = input.value || '';
+    const q = normalizeSearchValue(qRaw);
+    const box = document.getElementById('mainDirections');
+    const card = document.getElementById('mainDirectionsCard');
+    box.innerHTML = '';
+    const baseItems = ACTIVE_MAIN_ITEMS;
+    const suggestions = q ? findSuggestions(q, baseItems, DIRECTION_ALIASES) : [];
+    directionSuggestions = suggestions;
+    if(q){
+      if(card) card.style.display = 'none';
+      const local = suggestions.slice(0,5);
+      const selectedMainName = cleanText(document.getElementById('directionFilter').value);
+      const merged = [...local];
+      if(!merged.some(v => normalizeSearchValue(v.name) === q)) merged.unshift(makeCustomSuggestion(selectedMainName || qRaw, 'свой вариант'));
+      renderSuggestBox('directionSuggest', merged.map(v => ({...v, meta: v.meta || (getThemeById(v.id) ? 'тема' : 'направление')})), '', (item) => pickMainDirection(item, true));
+      scheduleAiSuggestions('direction');
+      return;
+    }
+    if(card) card.style.display = '';
+    FULL_DIRECTIONS.filter(item => TOP10_IDS.includes(item.id)).forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'option' + (state.main_direction === item.id ? ' active' : '');
+      btn.textContent = item.name;
+      btn.onclick = () => pickMainDirection(item, true);
+      box.appendChild(btn);
+    });
+    hideSuggestBox('directionSuggest');
+  };
+
+  renderSubDirections = function(){
+    const input = document.getElementById('subDirectionFilter');
+    const qRaw = input.value || '';
+    const q = normalizeSearchValue(qRaw);
+    const box = document.getElementById('subDirections');
+    const card = document.getElementById('subDirectionsCard');
+    box.innerHTML = '';
+    const staticList = SUB_DIRECTIONS[state.main_direction] || [];
+    const list = staticList.length ? staticList : (state.dynamic_sub_options || []);
+    const suggestions = q ? findSuggestions(q, list, SUB_DIRECTION_ALIASES) : [];
+    subDirectionSuggestions = suggestions;
+    if(q){
+      if(card) card.style.display = 'none';
+      const merged = suggestions.slice(0,5);
+      if(!merged.some(v => normalizeSearchValue(v.name) === q)) merged.unshift(makeCustomSuggestion(qRaw, 'свой вариант'));
+      renderSuggestBox('subDirectionSuggest', merged, 'специализация', (item) => pickSubDirection(item, true));
+      scheduleAiSuggestions('subdirection');
+      return;
+    }
+    if(card) card.style.display = '';
+    if(!list.length){
+      box.innerHTML = '<div class="summary-text">Подбираю специализации…</div>';
+      if(cleanText(state.custom_main_direction || getMainName(state.main_direction))) ensureDynamicSubOptions();
+      hideSuggestBox('subDirectionSuggest');
+      return;
+    }
+    list.forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'option' + (state.sub_direction === item.id ? ' active' : '');
+      btn.textContent = item.name;
+      btn.onclick = () => pickSubDirection(item, true);
+      box.appendChild(btn);
+    });
+    hideSuggestBox('subDirectionSuggest');
+  };
+
+  scheduleAiSuggestions = function(kind){
+    const isDirection = kind === 'direction';
+    const input = document.getElementById(isDirection ? 'directionFilter' : 'subDirectionFilter');
+    const query = normalizeSearchValue(input.value);
+    const suggestId = isDirection ? 'directionSuggest' : 'subDirectionSuggest';
+    const options = isDirection ? ACTIVE_MAIN_ITEMS : ((SUB_DIRECTIONS[state.main_direction] || state.dynamic_sub_options || []));
+    const local = isDirection ? directionSuggestions : subDirectionSuggestions;
+    const hasStrongLocal = local.some(item => (item.score || 0) >= 80);
+    if(isDirection ? directionAiTimer : subDirectionAiTimer) clearTimeout(isDirection ? directionAiTimer : subDirectionAiTimer);
+    if(!query || query.length < 2 || hasStrongLocal) return;
+    const requestId = isDirection ? ++directionAiRequestId : ++subDirectionAiRequestId;
+    const timer = setTimeout(async () => {
+      const names = await requestAiSuggestions(isDirection ? 'direction' : 'subdirection', query, options, isDirection ? '' : (state.custom_main_direction || getMainName(state.main_direction)));
+      if((isDirection ? directionAiRequestId : subDirectionAiRequestId) !== requestId) return;
+      let aiItems = enrichAiSuggestions(isDirection ? 'direction' : 'subdirection', names, options);
+      if(!aiItems.length) aiItems = names.map(v => makeCustomSuggestion(v, 'ai'));
+      const merged = mergeSuggestionLists(isDirection ? directionSuggestions : subDirectionSuggestions, aiItems);
+      if(!merged.some(v => v.id === '__custom__')) merged.unshift(makeCustomSuggestion(input.value, 'свой вариант'));
+      if(isDirection) directionSuggestions = merged; else subDirectionSuggestions = merged;
+      renderSuggestBox(suggestId, merged.map(v => ({...v, meta: v.meta || (isDirection ? (getThemeById(v.id) ? 'тема' : 'направление') : 'специализация')})), '', (item) => isDirection ? pickMainDirection(item, true) : pickSubDirection(item, true));
+    }, 250);
+    if(isDirection) directionAiTimer = timer; else subDirectionAiTimer = timer;
+  };
+
+  applyManualSelections = function(){
+    const directionInput = cleanText(document.getElementById('directionFilter')?.value);
+    const subDirectionInput = cleanText(document.getElementById('subDirectionFilter')?.value);
+    const roleInput = cleanText(document.getElementById('roleFilter')?.value);
+    if(state.step===1 && directionInput){
+      const match = findSuggestions(directionInput, ACTIVE_MAIN_ITEMS, DIRECTION_ALIASES)[0];
+      if(match){
+        state.main_direction = match.id;
+        state.custom_main_direction = '';
+        selectedThemeId = getThemeById(match.id) ? match.id : '';
+      } else {
+        state.main_direction = '__custom__';
+        state.custom_main_direction = directionInput;
+      }
+      state.sub_direction = '';
+      state.custom_sub_direction = '';
+      state.dynamic_sub_options = [];
+      state.dynamic_sub_source = '';
+    }
+    if(state.step===2 && subDirectionInput){
+      const list = (SUB_DIRECTIONS[state.main_direction] || state.dynamic_sub_options || []);
+      const match = findSuggestions(subDirectionInput, list, SUB_DIRECTION_ALIASES)[0];
+      if(match){
+        state.sub_direction = match.id;
+        state.custom_sub_direction = '';
+      } else {
+        state.sub_direction = '__custom__';
+        state.custom_sub_direction = subDirectionInput;
+      }
+    }
+    if(state.step===3 && !cleanText(state.role_mode) && roleInput){
+      state.role_mode = roleInput;
+    }
+  };
+
+  validateCurrentStep = function(){
+    if(state.step===1 && !cleanText(document.getElementById('directionFilter').value) && !state.main_direction) return 'Сначала выбери направление или введи своё.';
+    if(state.step===2 && !cleanText(document.getElementById('subDirectionFilter').value) && !state.sub_direction) return 'Сначала выбери специализацию или введи свою.';
+    if(state.step===3 && !state.role_mode) return 'Сначала выбери роль ИИ.';
+    if(state.step===4 && !cleanText(document.getElementById('taskText').value)) return 'Сначала опиши задачу.';
+    if(state.step===5 && state.mode==='pedant'){
+      if(!cleanText(document.getElementById('contextText').value)) return 'Заполни контекст.';
+      if(!cleanText(document.getElementById('resultTextInput').value)) return 'Заполни результат.';
+      if(!cleanText(document.getElementById('modeClarifyText').value)) return 'Заполни уточнение.';
+    }
+    if(state.step===5 && state.mode==='nightmare'){
+      if(!cleanText(document.getElementById('nightContextText').value)) return 'Заполни контекст.';
+      if(!cleanText(document.getElementById('formatText').value)) return 'Заполни формат и структуру ответа.';
+      if(!cleanText(document.getElementById('excludeText').value)) return 'Заполни исключения.';
+    }
+    if(state.step===6 && state.mode==='nightmare'){
+      if(!cleanText(document.getElementById('nightResultText').value)) return 'Заполни результат.';
+      if(!cleanText(document.getElementById('exampleText').value)) return 'Заполни пример.';
+    }
+    return '';
+  };
+
+  const oldShowStep = showStep;
+  showStep = function(step){
+    oldShowStep(step);
+    if(step === 2) setTimeout(() => renderSubDirections(), 0);
+  };
+
+  patchSearchInit();
+  renderMainDirections();
+  renderSubDirections();
+})();
+</script>
+
+</body>
+</html>
