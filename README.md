@@ -1,1 +1,1 @@
-# GPTCodex
+test codex connection
